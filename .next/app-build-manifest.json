@@ -11,6 +11,12 @@
       "static/chunks/main-app.js",
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
+    ],
+    "/request/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/request/page.css",
+      "static/chunks/app/request/page.js"
     ]
   }
 }
