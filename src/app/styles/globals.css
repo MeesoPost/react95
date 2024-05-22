@@ -1,3 +1,21 @@
 body {
   background-color: teal;
 }
+
+.login-icon {
+  size: 10px;
+}
+
+.window {
+  display: flex;
+  margin-block-start: 200px;
+}
+
+.Document {
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.PageContent {
+  display: flex;
+}
