@@ -3,6 +3,7 @@ import React from "react";
 import {
   Button,
   TextInput,
+  Toolbar,
   Window,
   WindowContent,
   WindowHeader,
@@ -44,23 +45,14 @@ const App: () => JSX.Element = () => {
                 Type a user name and password to log on to the MS Maas system.
               </p>
               <Paragraph className="">User name:</Paragraph>
-              <TextInput
-                value={state.value}
-                onChange={handleChange}
-                fullWidth
-              />
+              <TextInput />
               <Paragraph>Password:</Paragraph>
-              <TextInput
-                className="TextInput"
-                value={state.value}
-                onChange={handleChange}
-                type="password"
-                fullWidth
-              />
+              <TextInput type="password" className="TextInput" />
               <Button primary>OK</Button>
               <Button>Cancel</Button>
             </WindowContent>
           </Window>
+          <Toolbar></Toolbar>
         </PageContent>
       </ThemeProvider>
     </Document>
