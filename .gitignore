@@ -1,36 +1,63 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# See https://help.github.com/ignore-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+# Ignore 3rd party files
+node_modules/
+vendor/
+.npm/
 
-# testing
-/coverage
+# Ignore generated files
+build/
+coverage/
+dist/
+tmp/
 
-# next.js
-/.next/
-/out/
+# Ignore archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.tgz
+*.zip
 
-# production
-/build
+# Cache
+.cache/
+tsconfig.tsbuildinfo
 
-# misc
+# Ignore log files
+*.err
+*.log
+*.tmp
+
+# Code editor files
+.idea/
+.vs/
+.vscode/
+.code-workspace/
+*.sublime-project
+*.sublime-workspace
+
+# Operating system files
 .DS_Store
+Thumbs.db
+
+# Files that (sometimes) contain secrets
+*.der
+*.env
+*.key
 *.pem
+.env.*
 
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Example file exceptions
+!.env.example
 
-# local env files
-.env*.local
+# Only track the npm 7 workspace root package-lock.json
+yarn.lock
+pnpm-lock.yaml
+package-lock.json
+!/package-lock.json
 
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# Ignore generated files from Stencil
+components.d.ts
