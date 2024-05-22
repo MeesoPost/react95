@@ -6,9 +6,8 @@ import {
   Window,
   WindowContent,
   WindowHeader,
-  styleReset,
 } from "react95";
-import { createGlobalStyle, ThemeProvider } from "styled-components";
+import { ThemeProvider } from "styled-components";
 import original from "react95/dist/themes/original";
 import { useState } from "react";
 import { Paragraph } from "@utrecht/component-library-react";
