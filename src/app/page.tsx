@@ -25,7 +25,7 @@ const App: () => JSX.Element = () => {
     <Document className="Document">
       <ThemeProvider theme={original}>
         <PageContent className="PageContent">
-          <form action="../request" method="POST">
+          <form action="../request/" method="POST">
             <Window resizable className="window">
               <WindowHeader className="window-title">
                 <span>Welcome to MS Maas</span>
