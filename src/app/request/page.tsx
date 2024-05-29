@@ -1,86 +1,81 @@
-"use client"; // Move this to the top of the file as per Next.js conventions
-import React, { useState } from "react";
+"use client";
+import React, { useEffect, useState } from "react";
 import {
-  AppBar,
   Button,
-  MenuList,
-  MenuListItem,
-  Separator,
   TextInput,
-  Toolbar,
+  ProgressBar,
+  Window,
+  WindowContent,
+  WindowHeader,
 } from "react95";
-
-import styled, { ThemeProvider } from "styled-components";
+import { ThemeProvider } from "styled-components";
 import original from "react95/dist/themes/original";
-import { Document, PageContent } from "@utrecht/component-library-react";
+import styled from "styled-components";
+import {
+  Document,
+  PageContent,
+  Paragraph,
+} from "@utrecht/component-library-react";
 import "@react95/icons/icons.css";
-import { Logo } from "@react95/icons";
+import { Password1010 } from "@react95/icons";
 
-// Move the Wrapper style and Storybook configuration outside the component function
-const Wrapper = styled.div`
-  padding: 5rem;
-  background: ${({ theme }) => theme.desktopBackground};
+const StyledProgressBar = styled(ProgressBar)`
+  width: 1000px;
+  margin-block-start: 350px;
 `;
 
-// Main component function
-function App() {
-  const [open, setOpen] = useState(false);
+const App = () => {
+  const [percent, setPercent] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setPercent((prevPercent) => {
+        const newPercent = Math.min(prevPercent + Math.random() * 10, 100);
+        if (newPercent === 100) {
+          // Check if the bar is full
+          clearInterval(timer); // Stop the timer when the bar reaches 100%
+        }
+        return newPercent;
+      });
+    }, 250);
+  }, []);
 
   return (
     <Document className="Document">
       <ThemeProvider theme={original}>
         <PageContent className="PageContent">
-          <AppBar>
-            <Toolbar style={{ justifyContent: "space-between" }}>
-              <div style={{ position: "relative", display: "inline-block" }}>
-                <Button
-                  onClick={() => setOpen(!open)}
-                  active={open}
-                  style={{ fontWeight: "bold" }}
-                >
-                  <Logo></Logo>
-                  Start
-                </Button>
-                {open && (
-                  <MenuList
-                    style={{
-                      position: "absolute",
-                      left: "0",
-                      top: "100%",
-                    }}
-                    onClick={() => setOpen(false)}
-                  >
-                    <MenuListItem>
-                      <span role="img" aria-label="👨‍💻">
-                        👨‍💻
-                      </span>
-                      Profile
-                    </MenuListItem>
-                    <MenuListItem>
-                      <span role="img" aria-label="📁">
-                        📁
-                      </span>
-                      My account
-                    </MenuListItem>
-                    <Separator />
-                    <MenuListItem disabled>
-                      <span role="img" aria-label="🔙">
-                        🔙
-                      </span>
-                      Logout
-                    </MenuListItem>
-                  </MenuList>
-                )}
-              </div>
-
-              <TextInput placeholder="Search..." width={150} />
-            </Toolbar>
-          </AppBar>
+          {percent < 100 && ( // Show progress bar if it's not full yet
+            <StyledProgressBar
+              className="progressBar"
+              variant="tile"
+              value={Math.floor(percent)}
+            />
+          )}
+          {percent === 100 && ( // Show content only when the bar reaches 100%
+            <Window resizable className="window">
+              <WindowHeader className="window-title">
+                <span>Welcome to MS Maas</span>
+                <Button>?</Button>
+                <Button>X</Button>
+              </WindowHeader>
+              <WindowContent>
+                <Password1010 className="login-icon" />
+                <p>
+                  Type a user name and password to log on to the MS Maas system.
+                </p>
+                <Paragraph className="">User name:</Paragraph>
+                <TextInput />
+                <Paragraph>Password:</Paragraph>
+                <TextInput type="password" className="TextInput" />
+                <Button primary>OK</Button>
+                <Button>Cancel</Button>
+              </WindowContent>
+            </Window>
+          )}
         </PageContent>
       </ThemeProvider>
     </Document>
   );
-}
+};
 
-// Export both the component and the Storybook configuration
 export default App;

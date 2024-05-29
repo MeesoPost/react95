@@ -1,5 +1,6 @@
 body {
   background-color: teal;
+  cursor: url(../../../public/cursor.png), auto;
 }
 
 .login-icon {
@@ -18,4 +19,8 @@ body {
 
 .PageContent {
   display: flex;
+}
+
+.progressBar {
+  width: 100px;
 }
