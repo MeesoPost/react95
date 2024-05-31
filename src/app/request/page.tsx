@@ -30,28 +30,28 @@ const App = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setPercent((prevPercent) => {
-        const newPercent = Math.min(prevPercent + Math.random() * 10, 100);
-        if (newPercent === 100) {
+        const newPercent = Math.min(prevPercent + Math.random() * 10, 110);
+        if (newPercent === 110) {
           // Check if the bar is full
           clearInterval(timer); // Stop the timer when the bar reaches 100%
         }
         return newPercent;
       });
-    }, 250);
+    }, 1000);
   }, []);
 
   return (
     <Document className="Document">
       <ThemeProvider theme={original}>
         <PageContent className="PageContent">
-          {percent < 100 && ( // Show progress bar if it's not full yet
+          {percent < 110 && ( // Show progress bar if it's not full yet
             <StyledProgressBar
               className="progressBar"
               variant="tile"
               value={Math.floor(percent)}
             />
           )}
-          {percent === 100 && ( // Show content only when the bar reaches 100%
+          {percent === 110 && ( // Show content only when the bar reaches 100%
             <Window resizable className="window">
               <WindowHeader className="window-title">
                 <span>Welcome to MS Maas</span>
