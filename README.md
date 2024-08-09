@@ -9,7 +9,7 @@ MS Maas95 is a nostalgic Windows 95 themed web application built with Next.js, R
 - Request submission form
 - Email notifications for new requests
 - PostgreSQL database integration
-- Responsive design
+- Accesible
 
 ## Technologies Used
 
