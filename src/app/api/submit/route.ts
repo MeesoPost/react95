@@ -42,7 +42,13 @@ export async function POST(request: Request) {
     } catch (emailError) {
       console.error("Failed to send email:", emailError);
       // Log the failure
-      await logEmailFailure({ title, email, type, error: emailError.message });
+      await logEmailFailure({
+        title,
+        email,
+        type,
+        error:
+          emailError instanceof Error ? emailError.message : String(emailError),
+      });
       // You could also implement an alternative notification method here
       // For example, sending a message to a Slack channel or SMS
     }
