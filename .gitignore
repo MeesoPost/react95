@@ -49,6 +49,7 @@ Thumbs.db
 *.env
 *.key
 *.pem
+.env.local
 .env.*
 
 # Example file exceptions

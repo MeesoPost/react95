@@ -7,7 +7,6 @@ import {
   WindowContent,
   WindowHeader,
 } from "react95";
-
 import { ThemeProvider } from "styled-components";
 import original from "react95/dist/themes/original";
 import {
@@ -17,10 +16,9 @@ import {
 } from "@utrecht/component-library-react";
 import "@react95/icons/icons.css";
 import { Password1010 } from "@react95/icons";
+import Link from "next/link";
 
-const App: () => JSX.Element = () => {
-  ({});
-
+const App: React.FC = () => {
   return (
     <Document className="Document">
       <ThemeProvider theme={original}>
@@ -45,6 +43,9 @@ const App: () => JSX.Element = () => {
                   OK
                 </Button>
                 <Button>Cancel</Button>
+                <Link href="/request">
+                  <Button>Submit Request</Button>
+                </Link>
               </WindowContent>
             </Window>
           </form>
