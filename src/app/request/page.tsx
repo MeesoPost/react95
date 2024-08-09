@@ -20,13 +20,21 @@ import {
 import "@react95/icons/icons.css";
 
 const StyledProgressBar = styled(ProgressBar)`
-  width: 1000px;
-  margin-block-start: 350px;
+  width: 300px;
+  margin: 20px auto;
 `;
 
 const StyledSelect = styled(Select)`
   width: 100%;
   margin-bottom: 16px;
+  .react-select__control {
+    min-width: 300px;
+  }
+  .react-select__menu {
+    min-width: 300px;
+    max-height: 200px; // Limit the height of the dropdown
+    overflow-y: auto; // Allow scrolling if there are many options
+  }
 `;
 
 const FormGroup = styled.div`
@@ -43,29 +51,70 @@ const SearchButton = styled(Button)`
   margin-bottom: 16px;
 `;
 
+const LoadingText = styled.div`
+  text-align: center;
+  margin-top: 10px;
+  font-family: "MS Sans Serif", sans-serif;
+  color: #000;
+`;
+
+const CenteredContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+`;
+
 const RequestPage: React.FC = () => {
   const [percent, setPercent] = useState(0);
+  const [loadingPhase, setLoadingPhase] = useState(0);
   const [title, setTitle] = useState("");
   const [email, setEmail] = useState("");
   const [type, setType] = useState("movie");
   const [searchResults, setSearchResults] = useState<
-    Array<{ id: number; title: string }>
+    Array<{ id: number; title: string; year: string }>
   >([]);
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setPercent((prevPercent) => {
-        const newPercent = Math.min(prevPercent + Math.random() * 10, 110);
-        if (newPercent === 110) {
-          clearInterval(timer);
-        }
-        return newPercent;
-      });
-    }, 1000);
+    const phases = [
+      { target: 30, speed: 1000 },
+      { target: 60, speed: 1500 },
+      { target: 80, speed: 2000 },
+      { target: 98, speed: 2500 },
+      { target: 100, speed: 1000 },
+    ];
 
-    return () => clearInterval(timer);
-  }, []);
+    const animate = (phase: number) => {
+      if (phase >= phases.length) {
+        setTimeout(() => setPercent(110), 500);
+        return;
+      }
+
+      const { target, speed } = phases[phase];
+      const start = percent;
+      const startTime = Date.now();
+
+      const tick = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(1, elapsed / speed);
+        const currentPercent = start + (target - start) * progress;
+
+        setPercent(currentPercent);
+
+        if (progress < 1) {
+          requestAnimationFrame(tick);
+        } else {
+          setLoadingPhase(phase + 1);
+        }
+      };
+
+      requestAnimationFrame(tick);
+    };
+
+    animate(loadingPhase);
+  }, [loadingPhase, percent]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -85,6 +134,9 @@ const RequestPage: React.FC = () => {
         data.results.map((item: any) => ({
           id: item.id,
           title: item.title || item.name,
+          year: item.release_date
+            ? new Date(item.release_date).getFullYear().toString()
+            : "N/A",
         }))
       );
     } catch (error) {
@@ -98,12 +150,21 @@ const RequestPage: React.FC = () => {
     <Document className="Document">
       <ThemeProvider theme={original}>
         <PageContent className="PageContent">
-          {percent < 110 && (
-            <StyledProgressBar
-              className="progressBar"
-              variant="tile"
-              value={Math.floor(percent)}
-            />
+          {percent < 100 && (
+            <CenteredContent>
+              <StyledProgressBar
+                className="progressBar"
+                variant="tile"
+                value={Math.floor(percent)}
+              />
+              <LoadingText>
+                {loadingPhase === 0 && "Initializing..."}
+                {loadingPhase === 1 && "Loading resources..."}
+                {loadingPhase === 2 && "Preparing interface..."}
+                {loadingPhase === 3 && "Almost there..."}
+                {loadingPhase === 4 && "Finalizing..."}
+              </LoadingText>
+            </CenteredContent>
           )}
           {percent === 110 && (
             <Window resizable className="window">
@@ -128,7 +189,7 @@ const RequestPage: React.FC = () => {
                       <StyledSelect
                         options={searchResults.map((result) => ({
                           value: result.id.toString(),
-                          label: result.title,
+                          label: `${result.title} (${result.year})`,
                         }))}
                         onChange={(value) =>
                           setTitle((value as { label: string }).label)
