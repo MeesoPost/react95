@@ -18,6 +18,7 @@ import {
   Paragraph,
 } from "@utrecht/component-library-react";
 import "@react95/icons/icons.css";
+import HourglassProgressBar from "../components/HourGlassProgressbar"; // Make sure to create this file
 
 const StyledProgressBar = styled(ProgressBar)`
   width: 300px;
@@ -187,11 +188,7 @@ const RequestPage: React.FC = () => {
         <PageContent className="PageContent">
           {percent < 100 && (
             <CenteredContent>
-              <StyledProgressBar
-                className="progressBar"
-                variant="tile"
-                value={Math.floor(percent)}
-              />
+              <HourglassProgressBar value={Math.floor(percent)} />
               <LoadingText>
                 {loadingPhase === 0 && "Initializing..."}
                 {loadingPhase === 1 && "Loading resources..."}
