@@ -25,18 +25,43 @@ const StyledProgressBar = styled(ProgressBar)`
 `;
 
 const StyledSelect = styled(Select)`
-  width: 100%;
+  width: 300px;
   margin-bottom: 16px;
+
   .react-select__control {
-    min-width: 300px;
+    width: 300px;
   }
+
   .react-select__menu {
+    width: 300px;
     min-width: 300px;
-    max-height: 200px; // Limit the height of the dropdown
-    overflow-y: auto; // Allow scrolling if there are many options
+    max-width: 300px;
+  }
+
+  .react-select__option {
+    white-space: normal;
+    word-wrap: break-word;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  .react-select__single-value {
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 100%;
+    right: 0;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .react-select__value-container {
+    padding: 0 8px;
+  }
+
+  .react-select__menu-list {
+    max-height: 300px;
   }
 `;
-
 const FormGroup = styled.div`
   margin-bottom: 16px;
 `;
@@ -66,10 +91,16 @@ const CenteredContent = styled.div`
   height: 100vh;
 `;
 
+const StyledWindowContent = styled(WindowContent)`
+  width: 700px;
+  max-width: 100%;
+`;
+
 const RequestPage: React.FC = () => {
   const [percent, setPercent] = useState(0);
   const [loadingPhase, setLoadingPhase] = useState(0);
   const [title, setTitle] = useState("");
+  const [selectedTitle, setSelectedTitle] = useState("");
   const [email, setEmail] = useState("");
   const [type, setType] = useState("movie");
   const [searchResults, setSearchResults] = useState<
@@ -118,7 +149,11 @@ const RequestPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting:", { title, email, type });
+    console.log("Submitting:", {
+      email,
+      title: selectedTitle || title,
+      type,
+    });
     // TODO: Implement form submission logic
   };
 
@@ -173,26 +208,66 @@ const RequestPage: React.FC = () => {
                 <Button>?</Button>
                 <Button>X</Button>
               </WindowHeader>
-              <WindowContent>
+              <StyledWindowContent>
                 <form onSubmit={handleSubmit}>
                   <FormGroup>
                     <Paragraph>Title:</Paragraph>
-                    <StyledTextInput
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                    />
-                    <SearchButton onClick={handleSearch} disabled={isSearching}>
+                    <div style={{ display: "flex", marginBottom: "8px" }}>
+                      <StyledTextInput
+                        value={selectedTitle || title}
+                        onChange={(e) => {
+                          setTitle(e.target.value);
+                          setSelectedTitle("");
+                        }}
+                        style={{ flexGrow: 1, marginRight: "8px" }}
+                      />
+                      <Button
+                        onClick={() => {
+                          setTitle("");
+                          setSelectedTitle("");
+                          setSearchResults([]);
+                        }}
+                        style={{ minWidth: "80px" }}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                    <SearchButton
+                      primary
+                      onClick={handleSearch}
+                      disabled={isSearching}
+                    >
                       {isSearching ? "Searching..." : "Search"}
                     </SearchButton>
 
                     {searchResults.length > 0 && (
                       <StyledSelect
-                        options={searchResults.map((result) => ({
-                          value: result.id.toString(),
-                          label: `${result.title} (${result.year})`,
-                        }))}
-                        onChange={(value) =>
-                          setTitle((value as { label: string }).label)
+                        options={[
+                          { value: "", label: "Select a movie/series" },
+                          ...searchResults.map((result) => ({
+                            value: result.id.toString(),
+                            label: `${result.title} (${result.year})`,
+                          })),
+                        ]}
+                        onChange={(selectedOption) => {
+                          if (selectedOption) {
+                            const selected = selectedOption as {
+                              label: string;
+                              value: string;
+                            };
+                            if (selected.value === "") {
+                              setSelectedTitle("");
+                              setTitle("");
+                            } else {
+                              setSelectedTitle(selected.label);
+                              setTitle(selected.label);
+                            }
+                          }
+                        }}
+                        value={
+                          selectedTitle
+                            ? { label: selectedTitle, value: selectedTitle }
+                            : { value: "", label: "Select a movie/series" }
                         }
                       />
                     )}
@@ -224,7 +299,7 @@ const RequestPage: React.FC = () => {
                     Submit Request
                   </Button>
                 </form>
-              </WindowContent>
+              </StyledWindowContent>
             </Window>
           )}
         </PageContent>
