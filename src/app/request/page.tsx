@@ -18,7 +18,7 @@ import {
   Paragraph,
 } from "@utrecht/component-library-react";
 import "@react95/icons/icons.css";
-import HourglassProgressBar from "../components/HourGlassProgressbar"; // Make sure to create this file
+import HourglassProgressBar from "../components/HourglassProgressBar"; // Make sure to create this file
 
 const StyledProgressBar = styled(ProgressBar)`
   width: 300px;
