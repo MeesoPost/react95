@@ -15,11 +15,21 @@ services:
     networks:
       - internal
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /opt/maas95/Caddyfile:/etc/caddy/Caddyfile
+      - /opt/maas95/certs:/certs
+    networks:
+      - internal
+
   anubis:
     image: ghcr.io/techarohq/anubis:latest
     restart: unless-stopped
-    ports:
-      - "8923:8923"
     environment:
       TARGET: http://app:3000
       BIND: 0.0.0.0:8923
@@ -27,6 +37,7 @@ services:
       USE_REMOTE_ADDRESS: "true"
     networks:
       - internal
+
 
   postgres:
     image: postgres:16-alpine
