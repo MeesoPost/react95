@@ -19,7 +19,9 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - "8443:8443"
+    - "80:80"
+    - "8443:8443"
+    - "8444:8444"
     volumes:
       - /opt/maas95/Caddyfile:/etc/caddy/Caddyfile
       - /opt/maas95/certs:/certs
