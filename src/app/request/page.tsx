@@ -188,6 +188,7 @@ interface SearchResult {
   title: string;
   year: string;
   poster: string | null;
+  mediaType: "movie" | "tv" | "person";
 }
 
 const RequestPage: React.FC = () => {
@@ -274,14 +275,19 @@ const RequestPage: React.FC = () => {
           title?: string;
           name?: string;
           release_date?: string;
+          first_air_date?: string;
           poster_path?: string;
+          media_type?: string;
         }) => ({
           id: item.id,
           title: item.title || item.name || "Unknown",
           year: item.release_date
             ? new Date(item.release_date).getFullYear().toString()
+            : item.first_air_date
+            ? new Date(item.first_air_date).getFullYear().toString()
             : "N/A",
           poster: item.poster_path ? `${TMDB_IMG}${item.poster_path}` : null,
+          mediaType: (item.media_type ?? "movie") as "movie" | "tv" | "person",
         }))
       );
     } catch (error) {
@@ -301,7 +307,14 @@ const RequestPage: React.FC = () => {
       const res = await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: submitTitle, email, type }),
+        body: JSON.stringify({
+          title: submitTitle,
+          email,
+          type,
+          year: selectedResult?.year ?? null,
+          tmdbId: selectedResult?.id ?? null,
+          mediaType: selectedResult?.mediaType ?? null,
+        }),
       });
       setSubmitStatus(res.ok ? "success" : "error");
     } catch {

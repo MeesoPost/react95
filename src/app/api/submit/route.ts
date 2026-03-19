@@ -13,7 +13,10 @@ async function logEmailFailure(details: object) {
 }
 
 export async function POST(request: Request) {
-  const { title, email, type } = await request.json();
+  const { title, email, type, year, tmdbId, mediaType } = await request.json();
+  const tmdbUrl = tmdbId
+    ? `https://www.themoviedb.org/${mediaType === "tv" ? "tv" : "movie"}/${tmdbId}`
+    : null;
 
   try {
     const result = await pool.query(
@@ -22,14 +25,21 @@ export async function POST(request: Request) {
     );
 
     try {
+      const displayTitle = year ? `${title} (${year})` : title;
+      const tmdbLine = tmdbUrl ? `\nTMDB: ${tmdbUrl}` : "";
+      const tmdbHtml = tmdbUrl
+        ? `<p><strong>TMDB:</strong> <a href="${tmdbUrl}">${tmdbUrl}</a></p>`
+        : "";
+
       await sendEmail(
         process.env.EMAIL_USER ?? "",
-        "New Request Submitted",
-        `A new request has been submitted:\nTitle: ${title}\nEmail: ${email}\nType: ${type}`,
+        `New Request: ${displayTitle}`,
+        `A new request has been submitted:\nTitle: ${displayTitle}\nEmail: ${email}\nType: ${type}${tmdbLine}`,
         `<h1>New Request Submitted</h1>
-        <p><strong>Title:</strong> ${title}</p>
+        <p><strong>Title:</strong> ${displayTitle}</p>
         <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Type:</strong> ${type}</p>`
+        <p><strong>Type:</strong> ${type}</p>
+        ${tmdbHtml}`
       );
     } catch (emailError) {
       console.error("Failed to send email:", emailError);
