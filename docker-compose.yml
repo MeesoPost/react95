@@ -19,13 +19,13 @@ services:
     image: caddy:2-alpine
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - "8443:8443"
     volumes:
       - /opt/maas95/Caddyfile:/etc/caddy/Caddyfile
       - /opt/maas95/certs:/certs
     networks:
       - internal
+
 
   anubis:
     image: ghcr.io/techarohq/anubis:latest
