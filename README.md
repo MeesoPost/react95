@@ -97,6 +97,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Acknowledgments
 
-- [React95](https://github.com/arturbien/React95) for the amazing Windows 95 components
-- [TMDB](https://www.themoviedb.org/) for their comprehensive movie and TV series database
-- [Vercel](https://vercel.com) for their excellent hosting and database services
+- [React95](https://github.com/arturbien/React95) 
+- [TMDB](https://www.themoviedb.org/) 
+- [Vercel](https://vercel.com) 

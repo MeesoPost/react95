@@ -6,149 +6,120 @@ import {
   Window,
   WindowContent,
   WindowHeader,
-  List,
-  ListItem,
-  Divider,
 } from "react95";
 import { ThemeProvider } from "styled-components";
 import original from "react95/dist/themes/original";
-import {
-  Document,
-  PageContent,
-  Paragraph,
-} from "@utrecht/component-library-react";
 import "@react95/icons/icons.css";
-import { Password1010, Computer3, Folder } from "@react95/icons";
+import { Password1010 } from "@react95/icons";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
 
+const Desktop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
+`;
+
 const StyledWindow = styled(Window)`
-  width: 400px;
+  width: min(400px, 100%);
 `;
 
 const FlexContainer = styled.div`
   display: flex;
   align-items: center;
   margin-bottom: 20px;
+  gap: 16px;
 `;
 
-const IconWrapper = styled.div`
-  margin-right: 20px;
+const Label = styled.p`
+  font-family: "MS Sans Serif", sans-serif;
+  font-size: 11px;
+  margin: 0 0 4px 0;
+`;
+
+const ButtonRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+`;
+
+const ErrorText = styled.p`
+  color: red;
+  font-family: "MS Sans Serif", sans-serif;
+  font-size: 11px;
+  margin: 8px 0 0 0;
 `;
 
 const App: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [showDesktop, setShowDesktop] = useState(false);
   const router = useRouter();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     if (username === "admin" && password === "password") {
-      setError("");
-      setShowDesktop(true);
+      router.push("/request");
     } else {
       setError("Invalid username or password");
     }
   };
 
-  if (showDesktop) {
-    return (
-      <Document className="Document">
-        <ThemeProvider theme={original}>
-          <PageContent className="PageContent">
-            <StyledWindow resizable className="window">
-              <WindowHeader className="window-title">
-                <span>MS Maas Desktop</span>
-                <Button>X</Button>
-              </WindowHeader>
-              <WindowContent>
-                <List>
-                  <ListItem>
-                    <Computer3 variant="32x32_4" />
-                    My Computer
-                  </ListItem>
-                  <ListItem>
-                    <Folder variant="32x32_4" />
-                    My Documents
-                  </ListItem>
-                  <Divider />
-                  <ListItem onClick={() => router.push("/request")}>
-                    <Password1010 variant="32x32_4" />
-                    Submit Request
-                  </ListItem>
-                </List>
-              </WindowContent>
-            </StyledWindow>
-          </PageContent>
-        </ThemeProvider>
-      </Document>
-    );
-  }
-
   return (
-    <Document className="Document">
-      <ThemeProvider theme={original}>
-        <PageContent className="PageContent">
-          <StyledWindow resizable className="window">
-            <WindowHeader className="window-title">
-              <span>Welcome to MS Maas</span>
-              <Button>?</Button>
-              <Button>X</Button>
-            </WindowHeader>
-            <WindowContent>
-              <form onSubmit={handleLogin}>
-                <FlexContainer>
-                  <IconWrapper>
-                    <Password1010 variant="32x32_4" />
-                  </IconWrapper>
-                  <p>
-                    Type a user name and password to log on to the MS Maas
-                    system.
-                  </p>
-                </FlexContainer>
-                <Paragraph>User name:</Paragraph>
-                <TextInput
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  fullWidth
-                />
-                <Paragraph>Password:</Paragraph>
-                <TextInput
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  fullWidth
-                />
-                {error && (
-                  <Paragraph style={{ color: "red" }}>{error}</Paragraph>
-                )}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginTop: "20px",
+    <ThemeProvider theme={original}>
+      <Desktop>
+        <StyledWindow>
+          <WindowHeader className="window-title" style={{ display: "flex", alignItems: "center" }}>
+            <span style={{ flex: 1 }}>Welcome to MS Maas</span>
+            <Button>?</Button>
+            <Button>X</Button>
+          </WindowHeader>
+          <WindowContent>
+            <form onSubmit={handleLogin}>
+              <FlexContainer>
+                <Password1010 variant="32x32_4" />
+                <p style={{ margin: 0, fontSize: 11, fontFamily: "MS Sans Serif, sans-serif" }}>
+                  Type a user name and password to log on to MS Maas.
+                </p>
+              </FlexContainer>
+              <Label>User name:</Label>
+              <TextInput
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                fullWidth
+              />
+              <Label style={{ marginTop: 12 }}>Password:</Label>
+              <TextInput
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                fullWidth
+              />
+              {error && <ErrorText>{error}</ErrorText>}
+              <ButtonRow>
+                <Button type="submit" primary>
+                  OK
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setUsername("");
+                    setPassword("");
+                    setError("");
                   }}
                 >
-                  <Button type="submit" primary>
-                    OK
-                  </Button>
-                  <Button
-                    onClick={() => {
-                      setUsername("");
-                      setPassword("");
-                    }}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </form>
-            </WindowContent>
-          </StyledWindow>
-        </PageContent>
-      </ThemeProvider>
-    </Document>
+                  Cancel
+                </Button>
+              </ButtonRow>
+            </form>
+          </WindowContent>
+        </StyledWindow>
+      </Desktop>
+    </ThemeProvider>
   );
 };
 

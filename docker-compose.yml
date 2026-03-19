@@ -1,0 +1,51 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://maas95:${DB_PASSWORD}@postgres:5432/maas95
+      TMDB_API_KEY: ${TMDB_API_KEY}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASS: ${EMAIL_PASS}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - internal
+
+  anubis:
+    image: ghcr.io/techarohq/anubis:latest
+    restart: unless-stopped
+    ports:
+      - "8923:8923"
+    environment:
+      TARGET: http://app:3000
+      BIND: 0.0.0.0:8923
+      DIFFICULTY: 5
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: maas95
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: maas95
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maas95"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+volumes:
+  postgres_data:
+
+networks:
+  internal:

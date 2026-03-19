@@ -1,86 +1,45 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   TextInput,
-  ProgressBar,
   Window,
   WindowContent,
   WindowHeader,
-  Select,
+  Radio,
+  GroupBox,
 } from "react95";
 import { ThemeProvider } from "styled-components";
 import original from "react95/dist/themes/original";
 import styled from "styled-components";
-import {
-  Document,
-  PageContent,
-  Paragraph,
-} from "@utrecht/component-library-react";
 import "@react95/icons/icons.css";
-import HourglassProgressBar from "../components/HourglassProgressBar"; // Make sure to create this file
+import HourglassProgressBar from "../components/HourglassProgressBar";
 
-const StyledProgressBar = styled(ProgressBar)`
-  width: 300px;
-  margin: 20px auto;
+const TMDB_IMG = "https://image.tmdb.org/t/p/w92";
+
+const Desktop = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+  box-sizing: border-box;
 `;
 
-const StyledSelect = styled(Select)`
-  width: 300px;
-  margin-bottom: 16px;
-
-  .react-select__control {
-    width: 300px;
-  }
-
-  .react-select__menu {
-    width: 300px;
-    min-width: 300px;
-    max-width: 300px;
-  }
-
-  .react-select__option {
-    white-space: normal;
-    word-wrap: break-word;
-    padding: 8px;
-    font-size: 14px;
-  }
-
-  .react-select__single-value {
-    white-space: normal;
-    word-wrap: break-word;
-    max-width: 100%;
-    right: 0;
-    max-height: none;
-    overflow: visible;
-  }
-
-  .react-select__value-container {
-    padding: 0 8px;
-  }
-
-  .react-select__menu-list {
-    max-height: 300px;
-  }
-`;
 const FormGroup = styled.div`
-  margin-bottom: 16px;
+  margin-bottom: 4px;
 `;
 
-const StyledTextInput = styled(TextInput)`
-  width: 100%;
+const SearchRow = styled.div`
+  display: flex;
+  gap: 8px;
   margin-bottom: 8px;
-`;
-
-const SearchButton = styled(Button)`
-  width: 100%;
-  margin-bottom: 16px;
 `;
 
 const LoadingText = styled.div`
   text-align: center;
   margin-top: 10px;
-  font-family: "MS Sans Serif", sans-serif;
+  font-size: 11px;
   color: #000;
 `;
 
@@ -89,51 +48,203 @@ const CenteredContent = styled.div`
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100vh;
+  min-height: 100vh;
 `;
 
-const StyledWindowContent = styled(WindowContent)`
-  width: 700px;
-  max-width: 100%;
+const RadioRow = styled.div`
+  display: flex;
+  gap: 24px;
+  margin-top: 4px;
 `;
+
+const StatusOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 100;
+`;
+
+const Bsod = styled.div`
+  position: fixed;
+  inset: 0;
+  background: #0000aa;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  cursor: pointer;
+  padding: 48px;
+  box-sizing: border-box;
+`;
+
+const BsodInner = styled.div`
+  max-width: 640px;
+  width: 100%;
+  font-size: 14px;
+  line-height: 1.6;
+`;
+
+const BsodHighlight = styled.span`
+  background: #aaaaaa;
+  color: #0000aa;
+  padding: 0 4px;
+`;
+
+const ResultListBox = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  background: #fff;
+  max-height: 240px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+const ResultItem = styled.li<{ $selected: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+  background: ${(p) => (p.$selected ? "#000080" : "transparent")};
+  color: ${(p) => (p.$selected ? "#fff" : "#000")};
+  font-size: 11px;
+
+  &:hover {
+    background: ${(p) => (p.$selected ? "#000080" : "#c0c0c0")};
+  }
+`;
+
+const PosterImg = styled.img`
+  width: 32px;
+  height: 48px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid #808080;
+`;
+
+const PosterPlaceholder = styled.div`
+  width: 32px;
+  height: 48px;
+  flex-shrink: 0;
+  background: #c0c0c0;
+  border: 1px solid #808080;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  color: #808080;
+`;
+
+const ResultInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+`;
+
+const ResultTitle = styled.span`
+  font-size: 11px;
+  font-weight: bold;
+  white-space: normal;
+  word-break: break-word;
+`;
+
+const ResultYear = styled.span`
+  font-size: 10px;
+  opacity: 0.8;
+`;
+
+const SelectionConfirm = styled.div`
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #808080 #808080 #fff;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const loadingMessages = [
+  "Initializing...",
+  "Loading resources...",
+  "Preparing interface...",
+  "Almost there...",
+  "Finalizing...",
+];
+
+interface SearchResult {
+  id: number;
+  title: string;
+  year: string;
+  poster: string | null;
+}
 
 const RequestPage: React.FC = () => {
   const [percent, setPercent] = useState(0);
   const [loadingPhase, setLoadingPhase] = useState(0);
+  const [isLoaded, setIsLoaded] = useState(false);
+
   const [title, setTitle] = useState("");
-  const [selectedTitle, setSelectedTitle] = useState("");
+  const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
   const [email, setEmail] = useState("");
-  const [type, setType] = useState("movie");
-  const [searchResults, setSearchResults] = useState<
-    Array<{ id: number; title: string; year: string }>
-  >([]);
+  const [type, setType] = useState<"movie" | "series">("movie");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+  const [showLogout, setShowLogout] = useState(false);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const [showBsod, setShowBsod] = useState(false);
 
   useEffect(() => {
-    const phases = [
-      { target: 30, speed: 1000 },
-      { target: 60, speed: 1500 },
-      { target: 80, speed: 2000 },
-      { target: 98, speed: 2500 },
-      { target: 100, speed: 1000 },
-    ];
+    if (!showBsod) return;
+    const handler = () => setShowBsod(false);
+    window.addEventListener("keyup", handler);
+    return () => window.removeEventListener("keyup", handler);
+  }, [showBsod]);
+
+  useEffect(() => {
+    const isReload = sessionStorage.getItem("maas95_loaded") === "true";
+    sessionStorage.setItem("maas95_loaded", "true");
+
+    const phases = isReload
+      ? [
+          { target: 60, speed: 200 },
+          { target: 100, speed: 300 },
+        ]
+      : [
+          { target: 30, speed: 1000 },
+          { target: 60, speed: 1500 },
+          { target: 80, speed: 2000 },
+          { target: 98, speed: 2500 },
+          { target: 100, speed: 1000 },
+        ];
 
     const animate = (phase: number) => {
       if (phase >= phases.length) {
-        setTimeout(() => setPercent(110), 500);
+        setTimeout(() => setIsLoaded(true), 200);
         return;
       }
 
       const { target, speed } = phases[phase];
-      const start = percent;
+      const startVal = phase === 0 ? 0 : phases[phase - 1].target;
       const startTime = Date.now();
 
       const tick = () => {
         const elapsed = Date.now() - startTime;
         const progress = Math.min(1, elapsed / speed);
-        const currentPercent = start + (target - start) * progress;
-
-        setPercent(currentPercent);
+        setPercent(Math.floor(startVal + (target - startVal) * progress));
 
         if (progress < 1) {
           requestAnimationFrame(tick);
@@ -146,33 +257,31 @@ const RequestPage: React.FC = () => {
     };
 
     animate(loadingPhase);
-  }, [loadingPhase, percent]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Submitting:", {
-      email,
-      title: selectedTitle || title,
-      type,
-    });
-    // TODO: Implement form submission logic
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingPhase]);
 
   const handleSearch = async () => {
     if (!title) return;
     setIsSearching(true);
+    setSearchResults([]);
+    setSelectedResult(null);
     try {
-      const response = await fetch(
-        `/api/search?query=${encodeURIComponent(title)}`
-      );
+      const response = await fetch(`/api/search?query=${encodeURIComponent(title)}`);
       const data = await response.json();
       setSearchResults(
-        data.results.map((item: any) => ({
+        (data.results ?? []).map((item: {
+          id: number;
+          title?: string;
+          name?: string;
+          release_date?: string;
+          poster_path?: string;
+        }) => ({
           id: item.id,
-          title: item.title || item.name,
+          title: item.title || item.name || "Unknown",
           year: item.release_date
             ? new Date(item.release_date).getFullYear().toString()
             : "N/A",
+          poster: item.poster_path ? `${TMDB_IMG}${item.poster_path}` : null,
         }))
       );
     } catch (error) {
@@ -182,126 +291,263 @@ const RequestPage: React.FC = () => {
     }
   };
 
-  return (
-    <Document className="Document">
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const submitTitle = selectedResult?.title || title;
+    if (!canSubmit || !email || !submitTitle) return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: submitTitle, email, type }),
+      });
+      setSubmitStatus(res.ok ? "success" : "error");
+    } catch {
+      setSubmitStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleStatusDismiss = () => {
+    if (submitStatus === "success") {
+      setTitle("");
+      setSelectedResult(null);
+      setEmail("");
+      setType("movie");
+      setSearchResults([]);
+    }
+    setSubmitStatus("idle");
+  };
+
+  const canSubmit = !isSubmitting && !!(email && (selectedResult || title));
+
+  if (!isLoaded) {
+    return (
       <ThemeProvider theme={original}>
-        <PageContent className="PageContent">
-          {percent < 100 && (
-            <CenteredContent>
-              <HourglassProgressBar value={Math.floor(percent)} />
-              <LoadingText>
-                {loadingPhase === 0 && "Initializing..."}
-                {loadingPhase === 1 && "Loading resources..."}
-                {loadingPhase === 2 && "Preparing interface..."}
-                {loadingPhase === 3 && "Almost there..."}
-                {loadingPhase === 4 && "Finalizing..."}
-              </LoadingText>
-            </CenteredContent>
-          )}
-          {percent === 110 && (
-            <Window resizable className="window">
-              <WindowHeader className="window-title">
-                <span>MS Maas - Submit Request</span>
-                <Button>?</Button>
-                <Button>X</Button>
-              </WindowHeader>
-              <StyledWindowContent>
-                <form onSubmit={handleSubmit}>
-                  <FormGroup>
-                    <Paragraph>Title:</Paragraph>
-                    <div style={{ display: "flex", marginBottom: "8px" }}>
-                      <StyledTextInput
-                        value={selectedTitle || title}
-                        onChange={(e) => {
-                          setTitle(e.target.value);
-                          setSelectedTitle("");
-                        }}
-                        style={{ flexGrow: 1, marginRight: "8px" }}
-                      />
-                      <Button
-                        onClick={() => {
-                          setTitle("");
-                          setSelectedTitle("");
-                          setSearchResults([]);
-                        }}
-                        style={{ minWidth: "80px" }}
-                      >
-                        Clear
-                      </Button>
-                    </div>
-                    <SearchButton
-                      primary
-                      onClick={handleSearch}
-                      disabled={isSearching}
-                    >
-                      {isSearching ? "Searching..." : "Search"}
-                    </SearchButton>
-
-                    {searchResults.length > 0 && (
-                      <StyledSelect
-                        options={[
-                          { value: "", label: "Select a movie/series" },
-                          ...searchResults.map((result) => ({
-                            value: result.id.toString(),
-                            label: `${result.title} (${result.year})`,
-                          })),
-                        ]}
-                        onChange={(selectedOption) => {
-                          if (selectedOption) {
-                            const selected = selectedOption as {
-                              label: string;
-                              value: string;
-                            };
-                            if (selected.value === "") {
-                              setSelectedTitle("");
-                              setTitle("");
-                            } else {
-                              setSelectedTitle(selected.label);
-                              setTitle(selected.label);
-                            }
-                          }
-                        }}
-                        value={
-                          selectedTitle
-                            ? { label: selectedTitle, value: selectedTitle }
-                            : { value: "", label: "Select a movie/series" }
-                        }
-                      />
-                    )}
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Paragraph>Type:</Paragraph>
-                    <StyledSelect
-                      options={[
-                        { value: "movie", label: "Movie" },
-                        { value: "series", label: "Series" },
-                      ]}
-                      onChange={(value) =>
-                        setType((value as { value: string }).value)
-                      }
-                      value={type}
-                    />
-                  </FormGroup>
-
-                  <FormGroup>
-                    <Paragraph>Email:</Paragraph>
-                    <StyledTextInput
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </FormGroup>
-
-                  <Button type="submit" primary>
-                    Submit Request
-                  </Button>
-                </form>
-              </StyledWindowContent>
-            </Window>
-          )}
-        </PageContent>
+        <CenteredContent>
+          <HourglassProgressBar value={percent} />
+          <LoadingText>{loadingMessages[Math.min(loadingPhase, loadingMessages.length - 1)]}</LoadingText>
+        </CenteredContent>
       </ThemeProvider>
-    </Document>
+    );
+  }
+
+  return (
+    <ThemeProvider theme={original}>
+      <Desktop>
+        <Window style={{ width: "min(560px, 100%)" }}>
+          <WindowHeader className="window-title" style={{ display: "flex", alignItems: "center" }}>
+            <span style={{ flex: 1 }}>MS Maas — Submit Request</span>
+            <Button onClick={() => setShowBsod(true)}>?</Button>
+            <Button onClick={() => setShowLogout(true)}>X</Button>
+          </WindowHeader>
+          <WindowContent>
+            <form onSubmit={handleSubmit}>
+              <GroupBox label="Title">
+                <FormGroup>
+                  <SearchRow>
+                    <TextInput
+                      value={selectedResult ? `${selectedResult.title} (${selectedResult.year})` : title}
+                      onChange={(e) => {
+                        setTitle(e.target.value);
+                        setSelectedResult(null);
+                        setSearchResults([]);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleSearch();
+                        }
+                      }}
+                      style={{ flex: 1 }}
+                      placeholder="Search for a movie or series..."
+                    />
+                    <Button type="button" onClick={handleSearch} disabled={isSearching || !title}>
+                      {isSearching ? "Searching..." : "Search"}
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        setTitle("");
+                        setSelectedResult(null);
+                        setSearchResults([]);
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  </SearchRow>
+
+                  {searchResults.length > 0 && !selectedResult && (
+                    <ResultListBox>
+                      {searchResults.map((r) => (
+                        <ResultItem
+                          key={r.id}
+                          $selected={false}
+                          onClick={() => { setSelectedResult(r); setTimeout(() => emailRef.current?.focus(), 50); }}
+                        >
+                          {r.poster ? (
+                            <PosterImg src={r.poster} alt={r.title} />
+                          ) : (
+                            <PosterPlaceholder>N/A</PosterPlaceholder>
+                          )}
+                          <ResultInfo>
+                            <ResultTitle>{r.title}</ResultTitle>
+                            <ResultYear>{r.year}</ResultYear>
+                          </ResultInfo>
+                        </ResultItem>
+                      ))}
+                    </ResultListBox>
+                  )}
+                  {selectedResult && (
+                    <ResultListBox>
+                      <ResultItem
+                        $selected={true}
+                        onClick={() => { setSelectedResult(null); }}
+                        title="Click to change selection"
+                      >
+                        {selectedResult.poster ? (
+                          <PosterImg src={selectedResult.poster} alt={selectedResult.title} />
+                        ) : (
+                          <PosterPlaceholder>N/A</PosterPlaceholder>
+                        )}
+                        <ResultInfo>
+                          <ResultTitle>{selectedResult.title}</ResultTitle>
+                          <ResultYear>{selectedResult.year}</ResultYear>
+                        </ResultInfo>
+                      </ResultItem>
+                    </ResultListBox>
+                  )}
+                </FormGroup>
+              </GroupBox>
+
+              <GroupBox label="Type" style={{ marginTop: 12 }}>
+                <RadioRow>
+                  <Radio
+                    checked={type === "movie"}
+                    onChange={() => setType("movie")}
+                    name="type"
+                    value="movie"
+                    label="Movie"
+                  />
+                  <Radio
+                    checked={type === "series"}
+                    onChange={() => setType("series")}
+                    name="type"
+                    value="series"
+                    label="Series"
+                  />
+                </RadioRow>
+              </GroupBox>
+
+              <GroupBox label="Your email" style={{ marginTop: 12 }}>
+                <TextInput
+                  ref={emailRef}
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  fullWidth
+                  placeholder="you@example.com"
+                />
+              </GroupBox>
+
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+                <Button
+                  type="submit"
+                  primary
+                  disabled={!canSubmit}
+                  aria-disabled={!canSubmit}
+                  title={
+                    !selectedResult && !title
+                      ? "Search and select a title first"
+                      : !email
+                      ? "Enter your email address first"
+                      : undefined
+                  }
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Request"}
+                </Button>
+              </div>
+            </form>
+          </WindowContent>
+        </Window>
+
+        {showBsod && (
+          <Bsod onClick={() => setShowBsod(false)} onKeyDown={() => setShowBsod(false)}>
+            <BsodInner>
+              <p style={{ marginBottom: 24 }}>
+                <BsodHighlight>Windows</BsodHighlight>
+              </p>
+              <p style={{ marginBottom: 16 }}>
+                A fatal exception 0E has occurred at 0028:C15F4B21 in MS Maas95.
+                The current application will be terminated.
+              </p>
+              <p style={{ marginBottom: 24 }}>
+                * Press any key to terminate the current application.<br />
+                * Press CTRL+ALT+DEL to restart your computer. You will<br />
+                &nbsp;&nbsp;lose any unsaved information in all applications.
+              </p>
+              <p style={{ marginBottom: 32, color: "#aaaaaa" }}>
+                Error: MAAS_REQUEST_KERNEL_PANIC (0x0000006B)<br />
+                0x00000000 0x00000000 0x00000000 0x00000000
+              </p>
+              <p style={{ animation: "blink 1s step-start infinite" }}>
+                Press any key to continue <span style={{ borderBottom: "2px solid #fff" }}>_</span>
+              </p>
+              <style>{`@keyframes blink { 50% { opacity: 0 } }`}</style>
+            </BsodInner>
+          </Bsod>
+        )}
+
+        {showLogout && (
+          <StatusOverlay>
+            <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
+              <WindowHeader style={{ display: "flex", alignItems: "center" }}>
+                <span style={{ flex: 1 }}>MS Maas</span>
+                <Button onClick={() => setShowLogout(false)}>X</Button>
+              </WindowHeader>
+              <WindowContent>
+                <p style={{ fontSize: 14, margin: "0 0 20px 0" }}>
+                  Are you sure you want to log out of MS Maas?
+                </p>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <Button primary onClick={() => { sessionStorage.removeItem("maas95_loaded"); window.location.href = "/"; }}>
+                    OK
+                  </Button>
+                  <Button onClick={() => setShowLogout(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </WindowContent>
+            </Window>
+          </StatusOverlay>
+        )}
+
+        {submitStatus !== "idle" && (
+          <StatusOverlay>
+            <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
+              <WindowHeader>
+                <span>{submitStatus === "success" ? "Request Submitted" : "Error"}</span>
+              </WindowHeader>
+              <WindowContent>
+                <p style={{ fontSize: 11, margin: "0 0 20px 0" }}>
+                  {submitStatus === "success"
+                    ? "Your request has been submitted successfully. You will receive a confirmation email shortly."
+                    : "Something went wrong. Please try again."}
+                </p>
+                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                  <Button onClick={handleStatusDismiss} primary>
+                    OK
+                  </Button>
+                </div>
+              </WindowContent>
+            </Window>
+          </StatusOverlay>
+        )}
+      </Desktop>
+    </ThemeProvider>
   );
 };
 

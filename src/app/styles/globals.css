@@ -1,26 +1,46 @@
+@font-face {
+  font-family: "MS Sans Serif";
+  src: url("/fonts/ms_sans_serif.woff2") format("woff2");
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "MS Sans Serif";
+  src: url("/fonts/ms_sans_serif_bold.woff2") format("woff2");
+  font-weight: 700;
+}
+
+*, *::before, *::after {
+  font-family: "MS Sans Serif", sans-serif !important;
+}
+
 body {
   background-color: teal;
-  cursor: url(../../../public/cursor.png), auto;
+  cursor: url(/cursor.png), auto;
 }
 
-.login-icon {
-  size: 10px;
+button:disabled {
+  cursor: not-allowed !important;
+  pointer-events: auto !important;
 }
 
-.window {
-  display: flex;
-  margin-block-start: 200px;
+/* Win95 focus style — dotted black inner outline */
+*:focus {
+  outline: none !important;
 }
 
-.Document {
-  display: flex;
-  justify-content: space-evenly;
+*:focus-visible {
+  outline: 2px dotted teal !important;
+  outline-offset: -3px !important;
 }
 
-.PageContent {
-  display: flex;
+input:focus-visible {
+  outline: 2px dashed teal !important;
+  outline-offset: -4px !important;
+  box-shadow: none !important;
 }
 
-.progressBar {
-  width: 100px;
+input[type="radio"]:focus-visible {
+  outline: 2px dashed teal !important;
+  outline-offset: 2px !important;
 }

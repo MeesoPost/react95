@@ -64,3 +64,4 @@ package-lock.json
 # Ignore generated files from Stencil
 components.d.ts
 .vercel
+.next/cache/webpack/client-development/index.pack.gz.old
