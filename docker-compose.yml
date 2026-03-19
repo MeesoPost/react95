@@ -24,6 +24,7 @@ services:
       TARGET: http://app:3000
       BIND: 0.0.0.0:8923
       DIFFICULTY: 5
+      USE_REMOTE_ADDRESS: "true"
     networks:
       - internal
 
