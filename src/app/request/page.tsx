@@ -244,6 +244,8 @@ const RequestPage: React.FC = () => {
   const [showBsod, setShowBsod] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [cooldownOffense, setCooldownOffense] = useState(0);
+  const [plexMatch, setPlexMatch] = useState<{ title: string; year: number; type: string } | null>(null);
+  const [showPlexWarning, setShowPlexWarning] = useState(false);
 
   useEffect(() => {
     if (!showBsod) return;
@@ -475,7 +477,19 @@ const RequestPage: React.FC = () => {
                         <ResultItem
                           key={r.id}
                           $selected={false}
-                          onClick={() => { setSelectedResult(r); setTimeout(() => nameRef.current?.focus(), 50); }}
+                          onClick={async () => {
+                            setSelectedResult(r);
+                            setPlexMatch(null);
+                            setTimeout(() => nameRef.current?.focus(), 50);
+                            try {
+                              const res = await fetch(`/api/plex-check?title=${encodeURIComponent(r.title)}`);
+                              const data = await res.json();
+                              if (data.found) {
+                                setPlexMatch({ title: data.title, year: data.year, type: data.type });
+                                setShowPlexWarning(true);
+                              }
+                            } catch {}
+                          }}
                         >
                           {r.poster ? (
                             <PosterImg src={r.poster} alt={r.title} />
@@ -560,6 +574,26 @@ const RequestPage: React.FC = () => {
             </form>
           </WindowContent>
         </Window>
+
+        {showPlexWarning && plexMatch && (
+          <StatusOverlay>
+            <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
+              <WindowHeader style={{ display: "flex", alignItems: "center" }}>
+                <span style={{ flex: 1 }}>Already on Plex</span>
+                <Button onClick={() => setShowPlexWarning(false)}>X</Button>
+              </WindowHeader>
+              <WindowContent>
+                <p style={{ fontSize: 11, margin: "0 0 16px 0" }}>
+                  <strong>{plexMatch.title}{plexMatch.year ? ` (${plexMatch.year})` : ""}</strong> is already available on Plex.
+                  You can still submit a request if you think something is missing or wrong.
+                </p>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                  <Button onClick={() => setShowPlexWarning(false)} primary>OK</Button>
+                </div>
+              </WindowContent>
+            </Window>
+          </StatusOverlay>
+        )}
 
         {showBsod && (
           <Bsod onClick={() => setShowBsod(false)} onKeyDown={() => setShowBsod(false)}>
