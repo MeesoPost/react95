@@ -241,6 +241,7 @@ const RequestPage: React.FC = () => {
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [showLogout, setShowLogout] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
+  const titleRef = useRef<HTMLInputElement>(null);
   const [showBsod, setShowBsod] = useState(false);
   const [cooldownRemaining, setCooldownRemaining] = useState(0);
   const [cooldownOffense, setCooldownOffense] = useState(0);
@@ -441,6 +442,7 @@ const RequestPage: React.FC = () => {
                 <FormGroup>
                   <SearchRow>
                     <TextInput
+                      ref={titleRef}
                       value={selectedResult ? `${selectedResult.title} (${selectedResult.year})` : title}
                       onChange={(e) => {
                         setTitle(e.target.value);
@@ -480,15 +482,18 @@ const RequestPage: React.FC = () => {
                           onClick={async () => {
                             setSelectedResult(r);
                             setPlexMatch(null);
-                            setTimeout(() => nameRef.current?.focus(), 50);
                             try {
                               const res = await fetch(`/api/plex-check?title=${encodeURIComponent(r.title)}`);
                               const data = await res.json();
                               if (data.found) {
                                 setPlexMatch({ title: data.title, year: data.year, type: data.type });
                                 setShowPlexWarning(true);
+                              } else {
+                                setTimeout(() => nameRef.current?.focus(), 50);
                               }
-                            } catch {}
+                            } catch {
+                              setTimeout(() => nameRef.current?.focus(), 50);
+                            }
                           }}
                         >
                           {r.poster ? (
@@ -583,12 +588,12 @@ const RequestPage: React.FC = () => {
                 <Button onClick={() => setShowPlexWarning(false)}>X</Button>
               </WindowHeader>
               <WindowContent>
-                <p style={{ fontSize: 11, margin: "0 0 16px 0" }}>
+                <p style={{ fontSize: 13.5, margin: "0 0 16px 0" }}>
                   <strong>{plexMatch.title}{plexMatch.year ? ` (${plexMatch.year})` : ""}</strong> is already available on Plex.
                   You can still submit a request if you think something is missing or wrong.
                 </p>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
-                  <Button onClick={() => setShowPlexWarning(false)} primary>OK</Button>
+                  <Button onClick={() => { setShowPlexWarning(false); setTimeout(() => titleRef.current?.focus(), 50); }} primary>OK</Button>
                 </div>
               </WindowContent>
             </Window>
