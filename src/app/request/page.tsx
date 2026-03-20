@@ -94,6 +94,13 @@ const BsodHighlight = styled.span`
   padding: 0 4px;
 `;
 
+const SearchButton = styled(Button)<{ $active: boolean }>`
+  ${(p) => p.$active && `
+    outline: 3px dashed #000080;
+    outline-offset: 2px;
+  `}
+`;
+
 const ResultListBox = styled.ul`
   list-style: none;
   margin: 0;
@@ -191,6 +198,26 @@ interface SearchResult {
   mediaType: "movie" | "tv" | "person";
 }
 
+const BURST_WINDOW = 10000;
+const BURST_LIMIT = 5;
+const COOLDOWN_DURATIONS = [30, 60, 120, 180];
+const COOLDOWN_MESSAGES = ["easy.", "not so fast.", "hold up.", "take it easy."];
+
+interface RateState {
+  timestamps: number[];
+  offenseCount: number;
+  cooldownUntil: number;
+}
+
+function getRateState(): RateState {
+  try {
+    const stored = sessionStorage.getItem("maas95_rate");
+    return stored ? JSON.parse(stored) : { timestamps: [], offenseCount: 0, cooldownUntil: 0 };
+  } catch {
+    return { timestamps: [], offenseCount: 0, cooldownUntil: 0 };
+  }
+}
+
 const RequestPage: React.FC = () => {
   const [percent, setPercent] = useState(0);
   const [loadingPhase, setLoadingPhase] = useState(0);
@@ -207,7 +234,8 @@ const RequestPage: React.FC = () => {
   const [showLogout, setShowLogout] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const [showBsod, setShowBsod] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+  const [cooldownOffense, setCooldownOffense] = useState(0);
 
   useEffect(() => {
     if (!showBsod) return;
@@ -215,6 +243,19 @@ const RequestPage: React.FC = () => {
     window.addEventListener("keyup", handler);
     return () => window.removeEventListener("keyup", handler);
   }, [showBsod]);
+
+  useEffect(() => {
+    const state = getRateState();
+    if (state.cooldownUntil <= Date.now()) return;
+    setCooldownOffense(state.offenseCount);
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((state.cooldownUntil - Date.now()) / 1000);
+      if (remaining <= 0) { setCooldownRemaining(0); clearInterval(interval); }
+      else setCooldownRemaining(remaining);
+    }, 250);
+    setCooldownRemaining(Math.ceil((state.cooldownUntil - Date.now()) / 1000));
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const isReload = sessionStorage.getItem("maas95_loaded") === "true";
@@ -262,8 +303,8 @@ const RequestPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingPhase]);
 
-  const handleSearch = async (query?: string) => {
-    const q = query ?? title;
+  const handleSearch = async () => {
+    const q = title;
     if (!q) return;
     setIsSearching(true);
     setSearchResults([]);
@@ -304,6 +345,30 @@ const RequestPage: React.FC = () => {
     const submitTitle = selectedResult?.title || title;
     if (!canSubmit || !name || !submitTitle) return;
 
+    const now = Date.now();
+    const state = getRateState();
+
+    if (state.cooldownUntil > now) return;
+
+    const recent = state.timestamps.filter((t) => now - t < BURST_WINDOW);
+    if (recent.length >= BURST_LIMIT) {
+      const offense = state.offenseCount + 1;
+      const secs = COOLDOWN_DURATIONS[Math.min(offense - 1, COOLDOWN_DURATIONS.length - 1)];
+      const newState: RateState = { timestamps: [...recent, now], offenseCount: offense, cooldownUntil: now + secs * 1000 };
+      sessionStorage.setItem("maas95_rate", JSON.stringify(newState));
+      setCooldownOffense(offense);
+      setCooldownRemaining(secs);
+      const interval = setInterval(() => {
+        const remaining = Math.ceil((newState.cooldownUntil - Date.now()) / 1000);
+        if (remaining <= 0) { setCooldownRemaining(0); clearInterval(interval); }
+        else setCooldownRemaining(remaining);
+      }, 250);
+      return;
+    }
+
+    const newState: RateState = { ...state, timestamps: [...recent, now], cooldownUntil: 0 };
+    sessionStorage.setItem("maas95_rate", JSON.stringify(newState));
+
     setIsSubmitting(true);
     try {
       const res = await fetch("/api/submit", {
@@ -337,7 +402,8 @@ const RequestPage: React.FC = () => {
     setSubmitStatus("idle");
   };
 
-  const canSubmit = !isSubmitting && !!(name && (selectedResult || title));
+  const isRateLimited = cooldownRemaining > 0;
+  const canSubmit = !isSubmitting && !isRateLimited && !!(name && (selectedResult || title));
 
   if (!isLoaded) {
     return (
@@ -353,7 +419,7 @@ const RequestPage: React.FC = () => {
   return (
     <ThemeProvider theme={original}>
       <Desktop>
-        <Window style={{ width: "min(560px, 100%)" }}>
+        <Window style={{ width: "min(680px, 100%)" }}>
           <WindowHeader className="window-title" style={{ display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1 }}>MS Maas — Submit Request</span>
             <Button onClick={() => setShowBsod(true)}>?</Button>
@@ -367,28 +433,22 @@ const RequestPage: React.FC = () => {
                     <TextInput
                       value={selectedResult ? `${selectedResult.title} (${selectedResult.year})` : title}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        setTitle(val);
+                        setTitle(e.target.value);
                         setSelectedResult(null);
                         setSearchResults([]);
-                        if (debounceRef.current) clearTimeout(debounceRef.current);
-                        if (val.trim().length > 1) {
-                          debounceRef.current = setTimeout(() => handleSearch(val), 500);
-                        }
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
-                          if (debounceRef.current) clearTimeout(debounceRef.current);
                           handleSearch();
                         }
                       }}
                       style={{ flex: 1 }}
                       placeholder="Search for a movie or series..."
                     />
-                    <Button type="button" onClick={() => handleSearch()} disabled={isSearching || !title}>
+                    <SearchButton type="button" onClick={() => handleSearch()} disabled={isSearching || !title} $active={!!title && !selectedResult && searchResults.length === 0}>
                       {isSearching ? "..." : "Search"}
-                    </Button>
+                    </SearchButton>
                     <Button
                       type="button"
                       onClick={() => {
@@ -470,26 +530,24 @@ const RequestPage: React.FC = () => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   fullWidth
-                  placeholder="Your name"
+                  placeholder="John Doe"
                 />
               </GroupBox>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginTop: 16, gap: 4 }}>
                 <Button
                   type="submit"
                   primary
                   disabled={!canSubmit}
                   aria-disabled={!canSubmit}
-                  title={
-                    !selectedResult && !title
-                      ? "Search and select a title first"
-                      : !name
-                      ? "Enter your name first"
-                      : undefined
-                  }
                 >
                   {isSubmitting ? "Submitting..." : "Submit Request"}
                 </Button>
+                {isRateLimited && (
+                  <span style={{ fontSize: 11, color: "#808080" }}>
+                    {COOLDOWN_MESSAGES[Math.min(cooldownOffense - 1, COOLDOWN_MESSAGES.length - 1)]} {cooldownRemaining}s.
+                  </span>
+                )}
               </div>
             </form>
           </WindowContent>

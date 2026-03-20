@@ -19,6 +19,16 @@ body {
   cursor: url(/cursor.png), auto;
 }
 
+@media (min-width: 768px) {
+  html {
+    font-size: 18px;
+  }
+
+  button {
+    zoom: 0.95;
+  }
+}
+
 button:disabled {
   cursor: not-allowed !important;
   pointer-events: auto !important;
@@ -30,17 +40,17 @@ button:disabled {
 }
 
 *:focus-visible {
-  outline: 2px dotted teal !important;
+  outline: 2px dotted #000080 !important;
   outline-offset: -3px !important;
 }
 
 input:focus-visible {
-  outline: 2px dashed teal !important;
-  outline-offset: -4px !important;
+  outline: 2px dashed #000080 !important;
+  outline-offset: -2px !important;
   box-shadow: none !important;
 }
 
 input[type="radio"]:focus-visible {
-  outline: 2px dashed teal !important;
+  outline: 2px dashed #000080 !important;
   outline-offset: 2px !important;
 }
