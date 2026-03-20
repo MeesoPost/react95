@@ -198,15 +198,16 @@ const RequestPage: React.FC = () => {
 
   const [title, setTitle] = useState("");
   const [selectedResult, setSelectedResult] = useState<SearchResult | null>(null);
-  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [type, setType] = useState<"movie" | "series">("movie");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
   const [showLogout, setShowLogout] = useState(false);
-  const emailRef = useRef<HTMLInputElement>(null);
+  const nameRef = useRef<HTMLInputElement>(null);
   const [showBsod, setShowBsod] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!showBsod) return;
@@ -261,13 +262,14 @@ const RequestPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingPhase]);
 
-  const handleSearch = async () => {
-    if (!title) return;
+  const handleSearch = async (query?: string) => {
+    const q = query ?? title;
+    if (!q) return;
     setIsSearching(true);
     setSearchResults([]);
     setSelectedResult(null);
     try {
-      const response = await fetch(`/api/search?query=${encodeURIComponent(title)}`);
+      const response = await fetch(`/api/search?query=${encodeURIComponent(q)}`);
       const data = await response.json();
       setSearchResults(
         (data.results ?? []).map((item: {
@@ -300,7 +302,7 @@ const RequestPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const submitTitle = selectedResult?.title || title;
-    if (!canSubmit || !email || !submitTitle) return;
+    if (!canSubmit || !name || !submitTitle) return;
 
     setIsSubmitting(true);
     try {
@@ -309,7 +311,7 @@ const RequestPage: React.FC = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: submitTitle,
-          email,
+          name,
           type,
           year: selectedResult?.year ?? null,
           tmdbId: selectedResult?.id ?? null,
@@ -328,14 +330,14 @@ const RequestPage: React.FC = () => {
     if (submitStatus === "success") {
       setTitle("");
       setSelectedResult(null);
-      setEmail("");
+      setName("");
       setType("movie");
       setSearchResults([]);
     }
     setSubmitStatus("idle");
   };
 
-  const canSubmit = !isSubmitting && !!(email && (selectedResult || title));
+  const canSubmit = !isSubmitting && !!(name && (selectedResult || title));
 
   if (!isLoaded) {
     return (
@@ -365,21 +367,27 @@ const RequestPage: React.FC = () => {
                     <TextInput
                       value={selectedResult ? `${selectedResult.title} (${selectedResult.year})` : title}
                       onChange={(e) => {
-                        setTitle(e.target.value);
+                        const val = e.target.value;
+                        setTitle(val);
                         setSelectedResult(null);
                         setSearchResults([]);
+                        if (debounceRef.current) clearTimeout(debounceRef.current);
+                        if (val.trim().length > 1) {
+                          debounceRef.current = setTimeout(() => handleSearch(val), 500);
+                        }
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           e.preventDefault();
+                          if (debounceRef.current) clearTimeout(debounceRef.current);
                           handleSearch();
                         }
                       }}
                       style={{ flex: 1 }}
                       placeholder="Search for a movie or series..."
                     />
-                    <Button type="button" onClick={handleSearch} disabled={isSearching || !title}>
-                      {isSearching ? "Searching..." : "Search"}
+                    <Button type="button" onClick={() => handleSearch()} disabled={isSearching || !title}>
+                      {isSearching ? "..." : "Search"}
                     </Button>
                     <Button
                       type="button"
@@ -399,7 +407,7 @@ const RequestPage: React.FC = () => {
                         <ResultItem
                           key={r.id}
                           $selected={false}
-                          onClick={() => { setSelectedResult(r); setTimeout(() => emailRef.current?.focus(), 50); }}
+                          onClick={() => { setSelectedResult(r); setTimeout(() => nameRef.current?.focus(), 50); }}
                         >
                           {r.poster ? (
                             <PosterImg src={r.poster} alt={r.title} />
@@ -455,14 +463,14 @@ const RequestPage: React.FC = () => {
                 </RadioRow>
               </GroupBox>
 
-              <GroupBox label="Your email" style={{ marginTop: 12 }}>
+              <GroupBox label="Your name" style={{ marginTop: 12 }}>
                 <TextInput
-                  ref={emailRef}
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  ref={nameRef}
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
                   fullWidth
-                  placeholder="you@example.com"
+                  placeholder="Your name"
                 />
               </GroupBox>
 
@@ -475,8 +483,8 @@ const RequestPage: React.FC = () => {
                   title={
                     !selectedResult && !title
                       ? "Search and select a title first"
-                      : !email
-                      ? "Enter your email address first"
+                      : !name
+                      ? "Enter your name first"
                       : undefined
                   }
                 >

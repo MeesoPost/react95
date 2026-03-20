@@ -13,15 +13,15 @@ async function logEmailFailure(details: object) {
 }
 
 export async function POST(request: Request) {
-  const { title, email, type, year, tmdbId, mediaType } = await request.json();
+  const { title, name, type, year, tmdbId, mediaType } = await request.json();
   const tmdbUrl = tmdbId
     ? `https://www.themoviedb.org/${mediaType === "tv" ? "tv" : "movie"}/${tmdbId}`
     : null;
 
   try {
     const result = await pool.query(
-      "INSERT INTO requests (title, email, type) VALUES ($1, $2, $3) RETURNING id",
-      [title, email, type]
+      "INSERT INTO requests (title, name, type) VALUES ($1, $2, $3) RETURNING id",
+      [title, name, type]
     );
 
     try {
@@ -34,10 +34,10 @@ export async function POST(request: Request) {
       await sendEmail(
         process.env.EMAIL_USER ?? "",
         `New Request: ${displayTitle}`,
-        `A new request has been submitted:\nTitle: ${displayTitle}\nEmail: ${email}\nType: ${type}${tmdbLine}`,
+        `A new request has been submitted:\nTitle: ${displayTitle}\nName: ${name}\nType: ${type}${tmdbLine}`,
         `<h1>New Request Submitted</h1>
         <p><strong>Title:</strong> ${displayTitle}</p>
-        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Name:</strong> ${name}</p>
         <p><strong>Type:</strong> ${type}</p>
         ${tmdbHtml}`
       );
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       console.error("Failed to send email:", emailError);
       await logEmailFailure({
         title,
-        email,
+        name,
         type,
         error: emailError instanceof Error ? emailError.message : String(emailError),
       });
