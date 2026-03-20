@@ -14,6 +14,7 @@ import original from "react95/dist/themes/original";
 import styled from "styled-components";
 import "@react95/icons/icons.css";
 import HourglassProgressBar from "../components/HourglassProgressBar";
+import Taskbar from "../components/Taskbar";
 
 const TMDB_IMG = "https://image.tmdb.org/t/p/w92";
 
@@ -24,6 +25,13 @@ const Desktop = styled.div`
   min-height: 100vh;
   padding: 16px;
   box-sizing: border-box;
+
+  @media (min-width: 768px) {
+    padding-bottom: 64px;
+    > * {
+      zoom: 1.2;
+    }
+  }
 `;
 
 const FormGroup = styled.div`
@@ -93,10 +101,10 @@ const BsodHighlight = styled.span`
   color: #0000aa;
   padding: 0 4px;
 `;
-
+  
 const SearchButton = styled(Button)<{ $active: boolean }>`
   ${(p) => p.$active && `
-    outline: 3px dashed #000080;
+    outline: 3px dashed #001441;
     outline-offset: 2px;
   `}
 `;
@@ -419,7 +427,7 @@ const RequestPage: React.FC = () => {
   return (
     <ThemeProvider theme={original}>
       <Desktop>
-        <Window style={{ width: "min(680px, 100%)" }}>
+        <Window style={{ width: "min(520px, 100%)" }}>
           <WindowHeader className="window-title" style={{ display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1 }}>MS Maas — Submit Request</span>
             <Button onClick={() => setShowBsod(true)}>?</Button>
@@ -626,6 +634,7 @@ const RequestPage: React.FC = () => {
           </StatusOverlay>
         )}
       </Desktop>
+      <Taskbar windowTitle="MS Maas — Submit Request" onShutDown={() => setShowLogout(true)} />
     </ThemeProvider>
   );
 };
