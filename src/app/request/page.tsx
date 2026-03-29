@@ -23,11 +23,11 @@ const Desktop = styled.div`
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 16px;
+  padding: 1rem;
   box-sizing: border-box;
 
-  @media (min-width: 768px) {
-    padding-bottom: 64px;
+  @media (min-width: 48rem) {
+    padding-bottom: var(--space-800);
     > * {
       zoom: 1.2;
     }
@@ -35,20 +35,20 @@ const Desktop = styled.div`
 `;
 
 const FormGroup = styled.div`
-  margin-bottom: 4px;
+  margin-bottom: var(--space-50);
 `;
 
 const SearchRow = styled.div`
   display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--space-100);
+  margin-bottom: var(--space-100);
 `;
 
 const LoadingText = styled.div`
   text-align: center;
-  margin-top: 10px;
-  font-size: 11px;
-  color: #000;
+  margin-top: var(--space-100);
+  font-size: var(--text-md);
+  color: var(--fg-default);
 `;
 
 const CenteredContent = styled.div`
@@ -61,8 +61,8 @@ const CenteredContent = styled.div`
 
 const RadioRow = styled.div`
   display: flex;
-  gap: 24px;
-  margin-top: 4px;
+  gap: var(--space-300);
+  margin-top: var(--space-50);
 `;
 
 const StatusOverlay = styled.div`
@@ -71,98 +71,96 @@ const StatusOverlay = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--bg-overlay);
   z-index: 100;
 `;
 
 const Bsod = styled.div`
   position: fixed;
   inset: 0;
-  background: #0000aa;
-  color: #fff;
+  background: var(--bg-bsod);
+  color: var(--fg-bsod);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
   cursor: pointer;
-  padding: 48px;
+  padding: var(--space-600);
   box-sizing: border-box;
 `;
 
 const BsodInner = styled.div`
-  max-width: 640px;
+  max-width: var(--bsod-max-w);
   width: 100%;
-  font-size: 14px;
+  font-size: var(--text-base);
   line-height: 1.6;
 `;
 
 const BsodHighlight = styled.span`
-  background: #aaaaaa;
-  color: #0000aa;
-  padding: 0 4px;
+  background: var(--fg-bsod-highlight);
+  color: var(--bg-bsod);           /* invert: highlight box on BSOD screen */
+  padding: 0 var(--space-50);
 `;
-  
+
 const SeasonList = styled.ul`
   list-style: none;
-  margin: 2px 0 0 0;
+  margin: var(--space-25) 0 0 0;
   padding: 0;
-  border: 2px solid;
-  border-color: #808080 #fff #fff #808080;
-  background: #fff;
-  max-height: 200px;
+  border: var(--space-25) solid;
+  border-color: var(--border-default) var(--bg-default) var(--bg-default) var(--border-default);
+  background: var(--bg-default);
+  max-height: var(--list-max-h);
   overflow-y: auto;
 `;
 
 const SeasonRow = styled.li<{ $selected: boolean; $available?: boolean }>`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
+  gap: var(--space-100);
+  padding: 0.3125rem var(--space-100);
   cursor: pointer;
-  background: ${(p) => (p.$selected ? "#000080" : "transparent")};
-  color: ${(p) => (p.$selected ? "#fff" : "#000")};
-  border-bottom: 1px solid #e0e0e0;
+  background: ${(p) => (p.$selected ? "var(--bg-selected)" : "transparent")};
+  color: ${(p) => (p.$selected ? "var(--bg-default)" : "var(--fg-default)")};
+  border-bottom: var(--space-px) solid var(--border-subtle);
   border-left: ${(p) =>
     p.$available
-      ? `3px solid ${p.$selected ? "#90ee90" : "#006400"}`
-      : "3px solid transparent"};
+      ? `0.1875rem solid ${p.$selected ? "var(--positive-on-selected)" : "var(--positive-default)"}`
+      : "0.1875rem solid transparent"};
   &:last-child { border-bottom: none; }
-  &:hover { background: ${(p) => (p.$selected ? "#000080" : "#c0c0c0")}; }
+  &:hover { background: ${(p) => (p.$selected ? "var(--bg-selected)" : "var(--bg-hover)")}; }
 `;
 
 const SeasonName = styled.span`
-  font-size: 11px;
+  font-size: var(--text-md);
   font-weight: bold;
   flex: 1;
 `;
 
 const SeasonEpisodes = styled.span<{ $selected: boolean }>`
-  font-size: 10px;
-  color: ${(p) => (p.$selected ? "rgba(255,255,255,0.7)" : "#808080")};
+  font-size: var(--text-sm);
+  color: ${(p) => (p.$selected ? "var(--fg-on-selected-muted)" : "var(--fg-subtle)")};
   flex-shrink: 0;
 `;
 
-
-
 const PlexTag = styled.span`
-  font-size: 9px;
+  font-size: var(--text-xs);
   font-weight: bold;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  background: #006400;
-  color: #ffffff;
-  padding: 1px 0;
+  background: var(--positive-default);
+  color: var(--bg-default);
+  padding: var(--space-px) 0;
   flex-shrink: 0;
-  line-height: 14px;
-  width: 52px;
+  line-height: 0.875rem;
+  width: var(--plex-tag-w);
   text-align: center;
   display: inline-block;
 `;
 
 const SearchButton = styled(Button)<{ $active: boolean }>`
   ${(p) => p.$active && `
-    outline: 3px dashed #001441;
-    outline-offset: 2px;
+    outline: 0.1875rem dashed var(--color-focus);
+    outline-offset: var(--space-25);
   `}
 `;
 
@@ -170,10 +168,10 @@ const ResultListBox = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
-  border: 2px solid;
-  border-color: #808080 #fff #fff #808080;
-  background: #fff;
-  max-height: 240px;
+  border: var(--space-25) solid;
+  border-color: var(--border-default) var(--bg-default) var(--bg-default) var(--border-default);
+  background: var(--bg-default);
+  max-height: var(--results-max-h);
   overflow-y: auto;
   overflow-x: hidden;
   width: 100%;
@@ -183,69 +181,58 @@ const ResultListBox = styled.ul`
 const ResultItem = styled.li<{ $selected: boolean }>`
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 8px;
+  gap: var(--space-100);
+  padding: 0.375rem var(--space-100);
   cursor: pointer;
-  background: ${(p) => (p.$selected ? "#000080" : "transparent")};
-  color: ${(p) => (p.$selected ? "#fff" : "#000")};
-  font-size: 11px;
+  background: ${(p) => (p.$selected ? "var(--bg-selected)" : "transparent")};
+  color: ${(p) => (p.$selected ? "var(--bg-default)" : "var(--fg-default)")};
+  font-size: var(--text-md);
 
   &:hover {
-    background: ${(p) => (p.$selected ? "#000080" : "#c0c0c0")};
+    background: ${(p) => (p.$selected ? "var(--bg-selected)" : "var(--bg-hover)")};
   }
 `;
 
 const PosterImg = styled.img`
-  width: 32px;
-  height: 48px;
+  width: var(--poster-w);
+  height: var(--poster-h);
   object-fit: cover;
   flex-shrink: 0;
-  border: 1px solid #808080;
+  border: var(--space-px) solid var(--border-default);
 `;
 
 const PosterPlaceholder = styled.div`
-  width: 32px;
-  height: 48px;
+  width: var(--poster-w);
+  height: var(--poster-h);
   flex-shrink: 0;
-  background: #c0c0c0;
-  border: 1px solid #808080;
+  background: var(--bg-hover);
+  border: var(--space-px) solid var(--border-default);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 8px;
-  color: #808080;
+  font-size: var(--text-2xs);
+  color: var(--fg-subtle);
 `;
 
 const ResultInfo = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--space-25);
   min-width: 0;
 `;
 
 const ResultTitle = styled.span`
-  font-size: 11px;
+  font-size: var(--text-md);
   font-weight: bold;
   white-space: normal;
   word-break: break-word;
 `;
 
 const ResultYear = styled.span`
-  font-size: 10px;
+  font-size: var(--text-sm);
   opacity: 0.8;
 `;
 
-const SelectionConfirm = styled.div`
-  margin-top: 6px;
-  padding: 4px 8px;
-  background: #c0c0c0;
-  border: 2px solid;
-  border-color: #fff #808080 #808080 #fff;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-`;
 
 const loadingMessages = [
   "Initializing...",
@@ -493,7 +480,7 @@ const RequestPage: React.FC = () => {
   return (
     <ThemeProvider theme={original}>
       <Desktop>
-        <Window style={{ width: "min(520px, 100%)" }}>
+        <Window style={{ width: "min(var(--window-w), 100%)" }}>
           <WindowHeader className="window-title" style={{ display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1 }}>MS Maas — Submit Request</span>
             <Button aria-label="Help" onClick={() => setShowBsod(true)}>?</Button>
@@ -628,7 +615,7 @@ const RequestPage: React.FC = () => {
                 </FormGroup>
               </GroupBox>
 
-              <GroupBox label="Type" style={{ marginTop: 12 }}>
+              <GroupBox label="Type" style={{ marginTop: "var(--space-150)" }}>
                 <RadioRow>
                   <Radio
                     checked={type === "movie"}
@@ -648,9 +635,9 @@ const RequestPage: React.FC = () => {
               </GroupBox>
 
               {selectedResult?.mediaType === "tv" && (
-                <GroupBox label="Season" style={{ marginTop: 12 }}>
+                <GroupBox label="Season" style={{ marginTop: "var(--space-150)" }}>
                   {isLoadingSeasons ? (
-                    <div style={{ fontSize: 11, padding: "4px 0", color: "#808080" }}>
+                    <div style={{ fontSize: "var(--text-md)", padding: "var(--space-50) 0", color: "var(--fg-subtle)" }}>
                       Checking Plex…
                     </div>
                   ) : tvSeasons && tvSeasons.length > 0 ? (
@@ -710,7 +697,7 @@ const RequestPage: React.FC = () => {
                 </GroupBox>
               )}
 
-              <GroupBox label="Your name" style={{ marginTop: 12 }}>
+              <GroupBox label="Your name" style={{ marginTop: "var(--space-150)" }}>
                 <TextInput
                   ref={nameRef}
                   id="name-input"
@@ -723,7 +710,7 @@ const RequestPage: React.FC = () => {
                 />
               </GroupBox>
 
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginTop: 16, gap: 4 }}>
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", marginTop: "var(--space-200)", gap: "var(--space-50)" }}>
                 <Button
                   type="submit"
                   primary
@@ -733,7 +720,7 @@ const RequestPage: React.FC = () => {
                   {isSubmitting ? "Submitting..." : "Submit Request"}
                 </Button>
                 {isRateLimited && (
-                  <span style={{ fontSize: 11, color: "#808080" }}>
+                  <span style={{ fontSize: "var(--text-md)", color: "var(--fg-subtle)" }}>
                     {COOLDOWN_MESSAGES[Math.min(cooldownOffense - 1, COOLDOWN_MESSAGES.length - 1)]} {cooldownRemaining}s.
                   </span>
                 )}
@@ -744,13 +731,13 @@ const RequestPage: React.FC = () => {
 
         {showPlexWarning && plexMatch && (
           <StatusOverlay>
-            <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
+            <Window style={{ width: "min(var(--modal-w), calc(100vw - 2rem))" }}>
               <WindowHeader style={{ display: "flex", alignItems: "center" }}>
                 <span style={{ flex: 1 }}>Already on Plex</span>
                 <Button aria-label="Close" onClick={() => setShowPlexWarning(false)}>X</Button>
               </WindowHeader>
               <WindowContent>
-                <p style={{ fontSize: 13.5, margin: "0 0 16px 0" }}>
+                <p style={{ fontSize: "0.84375rem", margin: "0 0 var(--space-200) 0" }}>
                   <strong>{plexMatch.title}{plexMatch.year ? ` (${plexMatch.year})` : ""}</strong>
                   {plexMatch.type === "show"
                     ? " is (partially) available on Plex. Check the seasons below — green means already available."
@@ -758,7 +745,7 @@ const RequestPage: React.FC = () => {
                   }
                   {" "}You can still submit a request if you think something is missing or wrong.
                 </p>
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-100)" }}>
                   <Button onClick={() => { setShowPlexWarning(false); setTimeout(() => titleRef.current?.focus(), 50); }} primary>OK</Button>
                 </div>
               </WindowContent>
@@ -769,24 +756,24 @@ const RequestPage: React.FC = () => {
         {showBsod && (
           <Bsod onClick={() => setShowBsod(false)} onKeyDown={() => setShowBsod(false)}>
             <BsodInner>
-              <p style={{ marginBottom: 24 }}>
+              <p style={{ marginBottom: "var(--space-300)" }}>
                 <BsodHighlight>Windows</BsodHighlight>
               </p>
-              <p style={{ marginBottom: 16 }}>
+              <p style={{ marginBottom: "var(--space-200)" }}>
                 A fatal exception 0E has occurred at 0028:C15F4B21 in MS Maas95.
                 The current application will be terminated.
               </p>
-              <p style={{ marginBottom: 24 }}>
+              <p style={{ marginBottom: "var(--space-300)" }}>
                 * Press any key to terminate the current application.<br />
                 * Press CTRL+ALT+DEL to restart your computer. You will<br />
                 &nbsp;&nbsp;lose any unsaved information in all applications.
               </p>
-              <p style={{ marginBottom: 32, color: "#aaaaaa" }}>
+              <p style={{ marginBottom: "var(--space-400)", color: "var(--fg-bsod-highlight)" }}>
                 Error: MAAS_REQUEST_KERNEL_PANIC (0x0000006B)<br />
                 0x00000000 0x00000000 0x00000000 0x00000000
               </p>
               <p style={{ animation: "blink 1s step-start infinite" }}>
-                Press any key to continue <span style={{ borderBottom: "2px solid #fff" }}>_</span>
+                Press any key to continue <span style={{ borderBottom: "var(--space-25) solid var(--bg-default)" }}>_</span>
               </p>
               <style>{`@keyframes blink { 50% { opacity: 0 } }`}</style>
             </BsodInner>
@@ -795,16 +782,16 @@ const RequestPage: React.FC = () => {
 
         {showLogout && (
           <StatusOverlay>
-            <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
+            <Window style={{ width: "min(var(--modal-w), calc(100vw - 2rem))" }}>
               <WindowHeader style={{ display: "flex", alignItems: "center" }}>
                 <span style={{ flex: 1 }}>MS Maas</span>
                 <Button aria-label="Close" onClick={() => setShowLogout(false)}>X</Button>
               </WindowHeader>
               <WindowContent>
-                <p style={{ fontSize: 14, margin: "0 0 20px 0" }}>
+                <p style={{ fontSize: "var(--text-base)", margin: "0 0 var(--space-250) 0" }}>
                   Are you sure you want to log out of MS Maas?
                 </p>
-                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: "var(--space-100)" }}>
                   <Button primary onClick={() => { sessionStorage.removeItem("maas95_loaded"); window.location.href = "/"; }}>
                     OK
                   </Button>
@@ -819,12 +806,12 @@ const RequestPage: React.FC = () => {
 
         {submitStatus !== "idle" && (
           <StatusOverlay>
-            <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
+            <Window style={{ width: "min(var(--modal-w), calc(100vw - 2rem))" }}>
               <WindowHeader>
                 <span>{submitStatus === "success" ? "Request Submitted" : "Error"}</span>
               </WindowHeader>
               <WindowContent>
-                <p style={{ fontSize: 11, margin: "0 0 20px 0" }}>
+                <p style={{ fontSize: "var(--text-md)", margin: "0 0 var(--space-250) 0" }}>
                   {submitStatus === "success"
                     ? "Your request has been submitted successfully."
                     : "Something went wrong. Please try again."}

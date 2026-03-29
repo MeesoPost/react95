@@ -4,17 +4,77 @@
 :root {
   --font-primary: "MS Sans Serif", sans-serif;
 
-  --color-desktop:    oklch(51.98% 0.1003 196.45);
-  --color-focus:      oklch(20.37% 0.1648 264.06);
+  /* ── Desktop background ── */
+  --color-desktop:         oklch(51.98% 0.1003 196.45);
 
-  --focus-outline:    0.125rem dotted var(--color-focus);
-  --focus-offset:     -0.1875rem;
-  --focus-outline-input:  0.125rem dashed var(--color-focus);
-  --focus-offset-input:   -0.125rem;
-  --focus-offset-radio:    0.125rem;
+  /* ── Backgrounds ── */
+  --bg-default:            oklch(100% 0 0);              /* #ffffff */
+  --bg-hover:              oklch(77.67% 0 0);            /* #c0c0c0 */
+  --bg-selected:           oklch(21.26% 0.163 264.05);   /* #000080 */
+  --bg-overlay:            oklch(0% 0 0 / 0.3);
+  --bg-bsod:               oklch(27.07% 0.205 264.05);   /* #0000aa */
 
+  /* ── Foregrounds ── */
+  --fg-default:            oklch(0% 0 0);                /* #000000 */
+  --fg-subtle:             oklch(53.39% 0 0);            /* #808080 */
+  --fg-on-selected:        oklch(100% 0 0);              /* #ffffff */
+  --fg-on-selected-muted:  oklch(100% 0 0 / 0.7);
+  --fg-bsod:               oklch(100% 0 0);              /* #ffffff */
+  --fg-bsod-highlight:     oklch(69.44% 0 0);            /* #aaaaaa */
+
+  /* ── Borders ── */
+  --border-default:        oklch(53.39% 0 0);            /* #808080 */
+  --border-subtle:         oklch(89.27% 0 0);            /* #e0e0e0 */
+
+  /* ── Positive / Plex availability ── */
+  --positive-default:      oklch(39.20% 0.133 141.51);   /* #006400 — AAA on white (9.5:1) */
+  --positive-on-selected:  oklch(86.73% 0.137 145.20);   /* #90ee90 — AAA on navy  (9.9:1) */
+
+  /* ── Focus ── */
+  --color-focus:           oklch(20.37% 0.1648 264.06);  /* #001441 */
+
+  /* ── Focus styles ── */
+  --focus-outline:         0.125rem dotted var(--color-focus);
+  --focus-offset:          -0.1875rem;
+  --focus-outline-input:   0.125rem dashed var(--color-focus);
+  --focus-offset-input:    -0.125rem;
+  --focus-offset-radio:     0.125rem;
+
+  /* ── Scale ── */
   --base-font-size-desktop: 1.125rem; /* 18px at default 16px root */
-  --button-zoom-desktop: 0.95;
+  --button-zoom-desktop:    0.95;
+
+  /* ── Font sizes (rem @ 16px base) ── */
+  --text-2xs:  0.5rem;      /*  8px */
+  --text-xs:   0.5625rem;   /*  9px */
+  --text-sm:   0.625rem;    /* 10px */
+  --text-md:   0.6875rem;   /* 11px */
+  --text-base: 0.875rem;    /* 14px */
+
+  /* ── Spacing — numeric scale, base unit = 0.5rem (8px)
+        space-100 = 1× base = 0.5rem = 8px
+        space-N   = N/100 × base          ── */
+  --space-px:   0.0625rem;  /*  1px — border/outline hairline */
+  --space-25:   0.125rem;   /*  2px */
+  --space-50:   0.25rem;    /*  4px */
+  --space-100:  0.5rem;     /*  8px */
+  --space-150:  0.75rem;    /* 12px */
+  --space-200:  1rem;       /* 16px */
+  --space-250:  1.25rem;    /* 20px */
+  --space-300:  1.5rem;     /* 24px */
+  --space-400:  2rem;       /* 32px */
+  --space-600:  3rem;       /* 48px */
+  --space-800:  4rem;       /* 64px */
+
+  /* ── Component sizes ── */
+  --poster-w:        2rem;     /* 32px */
+  --poster-h:        3rem;     /* 48px */
+  --plex-tag-w:      3.25rem;  /* 52px */
+  --list-max-h:      12.5rem;  /* 200px */
+  --results-max-h:   15rem;    /* 240px */
+  --bsod-max-w:      40rem;    /* 640px */
+  --modal-w:         22.5rem;  /* 360px */
+  --window-w:        32.5rem;  /* 520px */
 }
 
 /* ============================================================
