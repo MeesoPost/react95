@@ -102,6 +102,63 @@ const BsodHighlight = styled.span`
   padding: 0 4px;
 `;
   
+const SeasonList = styled.ul`
+  list-style: none;
+  margin: 2px 0 0 0;
+  padding: 0;
+  border: 2px solid;
+  border-color: #808080 #fff #fff #808080;
+  background: #fff;
+  max-height: 200px;
+  overflow-y: auto;
+`;
+
+const SeasonRow = styled.li<{ $selected: boolean; $available?: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  cursor: pointer;
+  background: ${(p) => (p.$selected ? "#000080" : "transparent")};
+  color: ${(p) => (p.$selected ? "#fff" : "#000")};
+  border-bottom: 1px solid #e0e0e0;
+  border-left: ${(p) =>
+    p.$available
+      ? `3px solid ${p.$selected ? "#90ee90" : "#006400"}`
+      : "3px solid transparent"};
+  &:last-child { border-bottom: none; }
+  &:hover { background: ${(p) => (p.$selected ? "#000080" : "#c0c0c0")}; }
+`;
+
+const SeasonName = styled.span`
+  font-size: 11px;
+  font-weight: bold;
+  flex: 1;
+`;
+
+const SeasonEpisodes = styled.span<{ $selected: boolean }>`
+  font-size: 10px;
+  color: ${(p) => (p.$selected ? "rgba(255,255,255,0.7)" : "#808080")};
+  flex-shrink: 0;
+`;
+
+
+
+const PlexTag = styled.span`
+  font-size: 9px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #006400;
+  color: #ffffff;
+  padding: 1px 0;
+  flex-shrink: 0;
+  line-height: 14px;
+  width: 52px;
+  text-align: center;
+  display: inline-block;
+`;
+
 const SearchButton = styled(Button)<{ $active: boolean }>`
   ${(p) => p.$active && `
     outline: 3px dashed #001441;
@@ -247,6 +304,9 @@ const RequestPage: React.FC = () => {
   const [cooldownOffense, setCooldownOffense] = useState(0);
   const [plexMatch, setPlexMatch] = useState<{ title: string; year: number; type: string } | null>(null);
   const [showPlexWarning, setShowPlexWarning] = useState(false);
+  const [tvSeasons, setTvSeasons] = useState<{ number: number; name: string; episodeCount: number; available: boolean }[] | null>(null);
+  const [selectedSeasons, setSelectedSeasons] = useState<number[]>([]);
+  const [isLoadingSeasons, setIsLoadingSeasons] = useState(false);
 
   useEffect(() => {
     if (!showBsod) return;
@@ -392,6 +452,7 @@ const RequestPage: React.FC = () => {
           year: selectedResult?.year ?? null,
           tmdbId: selectedResult?.id ?? null,
           mediaType: selectedResult?.mediaType ?? null,
+          seasons: selectedSeasons.length > 0 ? selectedSeasons : null,
         }),
       });
       setSubmitStatus(res.ok ? "success" : "error");
@@ -409,6 +470,8 @@ const RequestPage: React.FC = () => {
       setName("");
       setType("movie");
       setSearchResults([]);
+      setTvSeasons(null);
+      setSelectedSeasons([]);
     }
     setSubmitStatus("idle");
   };
@@ -433,8 +496,8 @@ const RequestPage: React.FC = () => {
         <Window style={{ width: "min(520px, 100%)" }}>
           <WindowHeader className="window-title" style={{ display: "flex", alignItems: "center" }}>
             <span style={{ flex: 1 }}>MS Maas — Submit Request</span>
-            <Button onClick={() => setShowBsod(true)}>?</Button>
-            <Button onClick={() => setShowLogout(true)}>X</Button>
+            <Button aria-label="Help" onClick={() => setShowBsod(true)}>?</Button>
+            <Button aria-label="Close" onClick={() => setShowLogout(true)}>X</Button>
           </WindowHeader>
           <WindowContent>
             <form onSubmit={handleSubmit}>
@@ -443,6 +506,8 @@ const RequestPage: React.FC = () => {
                   <SearchRow>
                     <TextInput
                       ref={titleRef}
+                      id="title-input"
+                      aria-label="Search for a movie or series"
                       value={selectedResult ? `${selectedResult.title} (${selectedResult.year})` : title}
                       onChange={(e) => {
                         setTitle(e.target.value);
@@ -467,6 +532,8 @@ const RequestPage: React.FC = () => {
                         setTitle("");
                         setSelectedResult(null);
                         setSearchResults([]);
+                        setTvSeasons(null);
+                        setSelectedSeasons([]);
                       }}
                     >
                       Clear
@@ -474,25 +541,51 @@ const RequestPage: React.FC = () => {
                   </SearchRow>
 
                   {searchResults.length > 0 && !selectedResult && (
-                    <ResultListBox>
+                    <ResultListBox role="listbox" aria-label="Search results">
                       {searchResults.map((r) => (
                         <ResultItem
                           key={r.id}
                           $selected={false}
+                          tabIndex={0}
+                          role="option"
+                          aria-selected={false}
+                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") e.currentTarget.click(); }}
                           onClick={async () => {
                             setSelectedResult(r);
                             setPlexMatch(null);
-                            try {
-                              const res = await fetch(`/api/plex-check?title=${encodeURIComponent(r.title)}`);
-                              const data = await res.json();
-                              if (data.found) {
-                                setPlexMatch({ title: data.title, year: data.year, type: data.type });
-                                setShowPlexWarning(true);
-                              } else {
+                            setTvSeasons(null);
+                            setSelectedSeasons([]);
+                            setType(r.mediaType === "tv" ? "series" : "movie");
+
+                            if (r.mediaType === "tv") {
+                              setIsLoadingSeasons(true);
+                              try {
+                                const res = await fetch(`/api/tv-seasons?tmdbId=${r.id}`);
+                                const data = await res.json();
+                                setTvSeasons(data.seasons ?? null);
+                                setTimeout(() => nameRef.current?.focus(), 50);
+                              } catch {
+                                setTvSeasons(null);
+                              } finally {
+                                setIsLoadingSeasons(false);
+                              }
+                            } else {
+                              try {
+                                const params = new URLSearchParams({ title: r.title });
+                                if (r.year && r.year !== "N/A") params.set("year", r.year);
+                                if (r.mediaType) params.set("mediaType", r.mediaType);
+                                if (r.id) params.set("tmdbId", String(r.id));
+                                const res = await fetch(`/api/plex-check?${params}`);
+                                const data = await res.json();
+                                if (data.found) {
+                                  setPlexMatch({ title: data.title, year: data.year, type: data.type });
+                                  setShowPlexWarning(true);
+                                } else {
+                                  setTimeout(() => nameRef.current?.focus(), 50);
+                                }
+                              } catch {
                                 setTimeout(() => nameRef.current?.focus(), 50);
                               }
-                            } catch {
-                              setTimeout(() => nameRef.current?.focus(), 50);
                             }
                           }}
                         >
@@ -510,10 +603,14 @@ const RequestPage: React.FC = () => {
                     </ResultListBox>
                   )}
                   {selectedResult && (
-                    <ResultListBox>
+                    <ResultListBox role="listbox" aria-label="Selected title">
                       <ResultItem
                         $selected={true}
-                        onClick={() => { setSelectedResult(null); }}
+                        tabIndex={0}
+                        role="option"
+                        aria-selected={true}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { setSelectedResult(null); setTvSeasons(null); setSelectedSeasons([]); } }}
+                        onClick={() => { setSelectedResult(null); setTvSeasons(null); setSelectedSeasons([]); }}
                         title="Click to change selection"
                       >
                         {selectedResult.poster ? (
@@ -550,9 +647,74 @@ const RequestPage: React.FC = () => {
                 </RadioRow>
               </GroupBox>
 
+              {selectedResult?.mediaType === "tv" && (
+                <GroupBox label="Season" style={{ marginTop: 12 }}>
+                  {isLoadingSeasons ? (
+                    <div style={{ fontSize: 11, padding: "4px 0", color: "#808080" }}>
+                      Checking Plex…
+                    </div>
+                  ) : tvSeasons && tvSeasons.length > 0 ? (
+                    <>
+                      <SeasonList role="listbox" aria-label="Select seasons" aria-multiselectable="true">
+                        <SeasonRow
+                          $selected={selectedSeasons.length === 0}
+                          tabIndex={0}
+                          role="option"
+                          aria-selected={selectedSeasons.length === 0}
+                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setSelectedSeasons([]); }}
+                          onClick={() => setSelectedSeasons([])}
+                        >
+                          <SeasonName>All seasons</SeasonName>
+                          <SeasonEpisodes $selected={selectedSeasons.length === 0}>
+                            {selectedSeasons.length === 0 ? "selected" : "click to deselect all"}
+                          </SeasonEpisodes>
+                        </SeasonRow>
+                        {tvSeasons.map((s) => {
+                          const isSelected = selectedSeasons.includes(s.number);
+                          return (
+                            <SeasonRow
+                              key={s.number}
+                              $selected={isSelected}
+                              $available={s.available}
+                              tabIndex={0}
+                              role="option"
+                              aria-selected={isSelected}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter" || e.key === " ")
+                                  setSelectedSeasons((prev) =>
+                                    prev.includes(s.number)
+                                      ? prev.filter((n) => n !== s.number)
+                                      : [...prev, s.number]
+                                  );
+                              }}
+                              onClick={() =>
+                                setSelectedSeasons((prev) =>
+                                  prev.includes(s.number)
+                                    ? prev.filter((n) => n !== s.number)
+                                    : [...prev, s.number]
+                                )
+                              }
+                            >
+                              <SeasonName>{s.name}</SeasonName>
+                              {s.available && <PlexTag>On Plex</PlexTag>}
+                              <SeasonEpisodes $selected={isSelected}>
+                                {s.episodeCount} ep.
+                              </SeasonEpisodes>
+                            </SeasonRow>
+                          );
+                        })}
+                      </SeasonList>
+
+                    </>
+                  ) : null}
+                </GroupBox>
+              )}
+
               <GroupBox label="Your name" style={{ marginTop: 12 }}>
                 <TextInput
                   ref={nameRef}
+                  id="name-input"
+                  aria-label="Your name"
                   type="text"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -585,12 +747,16 @@ const RequestPage: React.FC = () => {
             <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
               <WindowHeader style={{ display: "flex", alignItems: "center" }}>
                 <span style={{ flex: 1 }}>Already on Plex</span>
-                <Button onClick={() => setShowPlexWarning(false)}>X</Button>
+                <Button aria-label="Close" onClick={() => setShowPlexWarning(false)}>X</Button>
               </WindowHeader>
               <WindowContent>
                 <p style={{ fontSize: 13.5, margin: "0 0 16px 0" }}>
-                  <strong>{plexMatch.title}{plexMatch.year ? ` (${plexMatch.year})` : ""}</strong> is already available on Plex.
-                  You can still submit a request if you think something is missing or wrong.
+                  <strong>{plexMatch.title}{plexMatch.year ? ` (${plexMatch.year})` : ""}</strong>
+                  {plexMatch.type === "show"
+                    ? " is (partially) available on Plex. Check the seasons below — green means already available."
+                    : " is already available on Plex."
+                  }
+                  {" "}You can still submit a request if you think something is missing or wrong.
                 </p>
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
                   <Button onClick={() => { setShowPlexWarning(false); setTimeout(() => titleRef.current?.focus(), 50); }} primary>OK</Button>
@@ -632,7 +798,7 @@ const RequestPage: React.FC = () => {
             <Window style={{ width: "min(360px, calc(100vw - 32px))" }}>
               <WindowHeader style={{ display: "flex", alignItems: "center" }}>
                 <span style={{ flex: 1 }}>MS Maas</span>
-                <Button onClick={() => setShowLogout(false)}>X</Button>
+                <Button aria-label="Close" onClick={() => setShowLogout(false)}>X</Button>
               </WindowHeader>
               <WindowContent>
                 <p style={{ fontSize: 14, margin: "0 0 20px 0" }}>
@@ -660,7 +826,7 @@ const RequestPage: React.FC = () => {
               <WindowContent>
                 <p style={{ fontSize: 11, margin: "0 0 20px 0" }}>
                   {submitStatus === "success"
-                    ? "Your request has been submitted successfully. You will receive a confirmation email shortly."
+                    ? "Your request has been submitted successfully."
                     : "Something went wrong. Please try again."}
                 </p>
                 <div style={{ display: "flex", justifyContent: "flex-end" }}>

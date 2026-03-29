@@ -1,3 +1,25 @@
+/* ============================================================
+   Design tokens
+   ============================================================ */
+:root {
+  --font-primary: "MS Sans Serif", sans-serif;
+
+  --color-desktop:    oklch(51.98% 0.1003 196.45);
+  --color-focus:      oklch(20.37% 0.1648 264.06);
+
+  --focus-outline:    0.125rem dotted var(--color-focus);
+  --focus-offset:     -0.1875rem;
+  --focus-outline-input:  0.125rem dashed var(--color-focus);
+  --focus-offset-input:   -0.125rem;
+  --focus-offset-radio:    0.125rem;
+
+  --base-font-size-desktop: 1.125rem; /* 18px at default 16px root */
+  --button-zoom-desktop: 0.95;
+}
+
+/* ============================================================
+   Fonts
+   ============================================================ */
 @font-face {
   font-family: "MS Sans Serif";
   src: url("/fonts/ms_sans_serif.woff2") format("woff2");
@@ -11,21 +33,24 @@
 }
 
 *, *::before, *::after {
-  font-family: "MS Sans Serif", sans-serif !important;
+  font-family: var(--font-primary) !important;
 }
 
+/* ============================================================
+   Base
+   ============================================================ */
 body {
-  background-color: teal;
+  background-color: var(--color-desktop);
   cursor: url(/cursor.png), auto;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 48rem) {
   html {
-    font-size: 18px;
+    font-size: var(--base-font-size-desktop);
   }
 
   button {
-    zoom: 0.95;
+    zoom: var(--button-zoom-desktop);
   }
 }
 
@@ -34,23 +59,25 @@ button:disabled {
   pointer-events: auto !important;
 }
 
-/* Win95 focus style — dotted black inner outline */
+/* ============================================================
+   Win95 focus styles
+   ============================================================ */
 *:focus {
   outline: none !important;
 }
 
 *:focus-visible {
-  outline: 2px dotted #000080 !important;
-  outline-offset: -3px !important;
+  outline: var(--focus-outline) !important;
+  outline-offset: var(--focus-offset) !important;
 }
 
 input:focus-visible {
-  outline: 2px dashed #000080 !important;
-  outline-offset: -2px !important;
+  outline: var(--focus-outline-input) !important;
+  outline-offset: var(--focus-offset-input) !important;
   box-shadow: none !important;
 }
 
 input[type="radio"]:focus-visible {
-  outline: 2px dashed #000080 !important;
-  outline-offset: 2px !important;
+  outline: var(--focus-outline-input) !important;
+  outline-offset: var(--focus-offset-radio) !important;
 }

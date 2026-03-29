@@ -93,7 +93,7 @@ const App: React.FC = () => {
     const pOk = validatePassword(password);
     if (!uOk) { usernameRef.current?.focus(); return; }
     if (!pOk) { passwordRef.current?.focus(); return; }
-    if (username === "admin" && password === "password") {
+    if (username.toLowerCase() === "admin" && password === "password") {
       router.push("/request");
     } else {
       setCredentialsError("The username or password is incorrect. Try again.");
@@ -124,7 +124,6 @@ const App: React.FC = () => {
                 ref={usernameRef}
                 value={username}
                 onChange={(e) => { setUsername(e.target.value); setCredentialsError(""); }}
-                onBlur={(e) => validateUsername(e.target.value)}
                 aria-invalid={!!usernameError || !!credentialsError}
                 aria-describedby={usernameError ? "username-error" : credentialsError ? "credentials-error" : undefined}
                 fullWidth
@@ -136,7 +135,6 @@ const App: React.FC = () => {
                 type="password"
                 value={password}
                 onChange={(e) => { setPassword(e.target.value); setCredentialsError(""); }}
-                onBlur={(e) => validatePassword(e.target.value)}
                 aria-invalid={!!passwordError || !!credentialsError}
                 aria-describedby={passwordError ? "password-error" : credentialsError ? "credentials-error" : undefined}
                 fullWidth

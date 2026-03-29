@@ -13,10 +13,16 @@ async function logEmailFailure(details: object) {
 }
 
 export async function POST(request: Request) {
-  const { title, name, type, year, tmdbId, mediaType } = await request.json();
+  const { title, name, type, year, tmdbId, mediaType, seasons } = await request.json();
   const tmdbUrl = tmdbId
     ? `https://www.themoviedb.org/${mediaType === "tv" ? "tv" : "movie"}/${tmdbId}`
     : null;
+  const seasonLabel: string | null =
+    Array.isArray(seasons) && seasons.length > 0
+      ? seasons.length === 1
+        ? `Season ${seasons[0]}`
+        : `Seasons ${seasons.join(", ")}`
+      : null;
 
   try {
     const result = await pool.query(
@@ -27,8 +33,16 @@ export async function POST(request: Request) {
     try {
       const displayTitle = year ? `${title} (${year})` : title;
       const tmdbLine = tmdbUrl ? `\nTMDB: ${tmdbUrl}` : "";
+      const seasonLine = seasonLabel ? `\nSeason: ${seasonLabel}` : "";
       const tmdbHtml = tmdbUrl
         ? `<p><strong>TMDB:</strong> <a href="${tmdbUrl}">${tmdbUrl}</a></p>`
+        : "";
+      const seasonRow = seasonLabel
+        ? `<tr><td colspan="2" style="height:6px;"></td></tr>
+              <tr>
+                <td style="font-size:11px;font-family:'Courier New',monospace;color:#000;padding:4px 0;width:80px;"><strong>Season</strong></td>
+                <td style="font-size:11px;font-family:'Courier New',monospace;color:#000;padding:4px 8px;background:#fff;border-top:1px solid #808080;border-left:1px solid #808080;border-right:1px solid #fff;border-bottom:1px solid #fff;">${seasonLabel}</td>
+              </tr>`
         : "";
 
       const html = `<!DOCTYPE html>
@@ -73,6 +87,7 @@ export async function POST(request: Request) {
                 <td style="font-size:11px;font-family:'Courier New',monospace;color:#000;padding:4px 0;"><strong>Type</strong></td>
                 <td style="font-size:11px;font-family:'Courier New',monospace;color:#000;padding:4px 8px;background:#fff;border-top:1px solid #808080;border-left:1px solid #808080;border-right:1px solid #fff;border-bottom:1px solid #fff;">${type}</td>
               </tr>
+              ${seasonRow}
             </table>
 
             <!-- Divider -->
@@ -106,7 +121,7 @@ export async function POST(request: Request) {
       await sendEmail(
         process.env.EMAIL_USER ?? "",
         `New Request: ${displayTitle}`,
-        `New request:\nTitle: ${displayTitle}\nName: ${name}\nType: ${type}${tmdbLine}`,
+        `New request:\nTitle: ${displayTitle}\nName: ${name}\nType: ${type}${seasonLine}${tmdbLine}`,
         html
       );
     } catch (emailError) {

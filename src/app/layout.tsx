@@ -23,8 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={msSansSerif.className}>
+    <html lang="en" suppressHydrationWarning>
+      <body className={msSansSerif.className} suppressHydrationWarning>
         <StyledComponentsRegistry>{children}</StyledComponentsRegistry>
       </body>
     </html>
